@@ -8,6 +8,9 @@ const cors = require('cors');
 const { fetchSatelliteData, calculateSatellitePositions } = require('./controllers/driftSatellitePositions');
 const { setupWebSocketServer } = require('./middleware/webSocketMiddleware');
 const { sendTestNotification } = require('./controllers/notificationController');
+const astronautRoutes = require('./routes/astronautRoutes');
+
+
 app.use(cors());
 const PORT = process.env.PORT || 3000;
 // Middleware
@@ -15,6 +18,8 @@ app.use(express.json());
 app.use('/api/drift', driftRoutes);
 app.use(express.static('public'));
 app.post('/api/sendNotification', sendTestNotification);
+app.use('/astronautRoutes', astronautRoutes);
+
 
 // Create an HTTP server from the Express app
 const server = http.createServer(app);
