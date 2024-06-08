@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Home from './components/Home/Home';
 import { WebSocketProvider, useWebSocket } from './context/WebSocketContext';
 import SocketStatus from './components/Common/SocketStatus';
+import AsteroidScreen from './components/Asteroid/screen/AsteroidScreen';
 
 function App() {
   const [selectedSatelliteName, setSelectedSatelliteName] = useState('');
@@ -17,6 +18,7 @@ function App() {
         <Routes>
           <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} />} />
           <Route path="/drift" element={<DriftVisualisation satName={selectedSatelliteName} />} />
+          <Route path="/asteroids" element={<AsteroidScreen />} />
           <Route path="/" element={<Home />} />
         </Routes>
       </BrowserRouter>
