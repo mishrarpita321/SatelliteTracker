@@ -1,0 +1,60 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: Arial, sans-serif;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* align-items: center; */
+  /* justify-content: center; */
+  /* height: 100vh; */
+  /* margin: 0; */
+}
+
+/* .group {
+  text-align: center;
+} */
+
+.checkbox-group {
+  margin: 20px 0;
+}
+
+.checkbox-group label {
+  margin-right: 20px;
+}
+
+.checkbox-group input {
+  margin-right: 5px;
+}
+
+/* .btn {
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background-color: #ddd;
+} */
+
+.connection-ribbon {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffcc00; /* Yellow color for connecting and retrying */
+  color: #000;
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.connection-ribbon.connected {
+  background-color: #4CAF50; /* Green color for connected */
+  color: #fff;
+}
