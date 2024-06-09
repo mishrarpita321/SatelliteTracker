@@ -1,9 +1,12 @@
 const express = require('express');
 const {
-  fetchAndStoreSatelliteData
+  fetchAndStoreSatelliteData,
+  saveToNeo4j
 } = require('../controllers/driftController');
 const { fetchSatelliteTle, predictAllSatellitePosition, fetchSatelliteDataById, fetchSatellitePositionById, 
-  predictSatellitePositionByName, fetchAndStoreGroupSatelliteData, predictSatelliteGroupPositions } = require('../controllers/driftSatellitePositions');
+  predictSatellitePositionByName, fetchAndStoreGroupSatelliteData, predictSatelliteGroupPositions, 
+  getSatelliteOrbitalParameters,
+  getPost} = require('../controllers/driftSatellitePositions');
 const axios = require('axios');
 const router = express.Router();
 
@@ -52,8 +55,32 @@ router.get('/satelliteData/:id', async (req, res) => {
 
 router.post('/getSatellitePosition', predictSatellitePositionByName);
 
-router.get('/fetch/:group', fetchAndStoreGroupSatelliteData);
+// router.get('/fetch/:group', fetchAndStoreGroupSatelliteData);
+const groups = ['intelsat', 'iridium', 'starlink', 'other-comm'];
+
+router.get('/fetch/all', async (req, res) => {
+    try {
+        const fetchPromises = groups.map(group => fetchAndStoreGroupSatelliteData(group));
+        await Promise.all(fetchPromises);
+        res.json("All satellite group data saved successfully.");
+    } catch (error) {
+        console.error('Error:', error.message);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 router.post('/predict-groupsatellite-positions', predictSatelliteGroupPositions);
+
+router.get('/satelliteDriftPos', getPost);
+
+router.post('/check-drift', async (req, res) => {
+  console.log('req.body:', req.body);
+  try {
+      const message = await saveToNeo4j(req.body);
+      res.status(200).send({ message });
+  } catch (error) {
+      res.status(500).send({ error: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;

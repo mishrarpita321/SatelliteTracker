@@ -3,8 +3,7 @@ import { Cartesian3, Color, IonImageryProvider, Ion } from 'cesium';
 import { useEffect, useState, useRef } from 'react';
 import { useWebSocket } from '../../context/WebSocketContext';
 
-const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSatelliteName }) => {
-    const [satPositions, setSatPositions] = useState([]);
+const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSatelliteName, setSatPositions, satPositions }) => {
     const { sendMessage, addMessageHandler } = useWebSocket();
     
     const wsRef = useRef(null);
@@ -29,7 +28,7 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
         const handleSatelliteGroupMsg = (data) => {
             if (data.type === 'groupPosition' && data.group === selectedGroup) {
                 setSatPositions(data.position);
-                console.log('Received satellite positions:', data);
+                // console.log('Received satellite positions:', data);
             }
         };
 
@@ -53,8 +52,8 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
         };
     }, [selectedGroup]);
 
-    const handleClick = (satname) => () => {
-        console.log('Clicked on satellite with NORAD Cat ID: ', satname);
+    const handleClick = (satname, longitude, latitude, altitude) => () => {
+        console.log('Clicked on satellite with NORAD Cat ID: ', satname, longitude, latitude, altitude);
         setShowSimulateButton(true);
         setSelectedSatelliteName(satname);
     };
@@ -87,7 +86,7 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
                         <div>Latitude: ${sat.latitude}</div>
                         <div>Altitude: ${sat.altitude}</div>
                     `}
-                    onClick={handleClick(sat.satname)}
+                    onClick={handleClick(sat.satname, sat.longitude, sat.latitude, sat.altitude)}
                 >
                 </Entity>
             ))}
