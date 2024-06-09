@@ -1,12 +1,13 @@
 const WebSocket = require('ws');
 const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups } = require('./driftSatellitesMiddleware');
+const { subscribeToAsteroid, unsubscribeFromAsteroid } = require('./asteroidMiddleware');
 // const { getFakeAsteroidOrbitalPosition } = require('../utils/predictPosition');
 
 // Store all active connections for broad messaging
 let connections = new Set();
 
 // Maps to manage subscribers and intervals for specific asteroid updates
-const subscribers = new Map();
+const AsteroidSubscribers = new Map();
 const satelliteGroupSubscribers = new Map();
 const updateIntervals = new Map();
 
@@ -39,12 +40,12 @@ function setupWebSocketServer(server) {
             console.log('WebSocket connection closed');
             connections.delete(ws); // Remove from global set on close
             // Clean up any subscriptions this connection had
-            subscribers.forEach((subs, asteroidId) => {
+            AsteroidSubscribers.forEach((subs, asteroidId) => {
                 subs.delete(ws);
                 if (subs.size === 0) {
                     clearInterval(updateIntervals.get(asteroidId));
                     updateIntervals.delete(asteroidId);
-                    subscribers.delete(asteroidId);
+                    AsteroidSubscribers.delete(asteroidId);
                 }
             });
             satelliteGroupSubscribers.forEach((subs, group) => {
@@ -64,9 +65,10 @@ function handleClientMessage(ws, data) {
     switch (data.type) {
         case 'requestAsteroidPosition':
             // subscribeToAsteroid(ws, data.asteroidId);
+            subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data.id);
             break;
         case 'stopAsteroidTracking':
-            // unsubscribeFromAsteroid(ws, data.asteroidId);
+            unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data.id);
             break;
         case 'requestSatelliteGroupPosition':
             subscribeToSatelliteGroups(ws,updateIntervals, satelliteGroupSubscribers , data.group);

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../../constants/apiConstants";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./AsteroidScreen.css";
+import "./AsteroidListScreen.css";
+import { useNavigate } from "react-router-dom";
 
-const AsteroidScreen = () => {
+
+const AsteroidListScreen = () => {
     const [asteroids, setAsteroids] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -12,6 +14,8 @@ const AsteroidScreen = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortField, setSortField] = useState("name");
     const [sortOrder, setSortOrder] = useState("asc");
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         fetchAsteroids();
@@ -44,6 +48,11 @@ const AsteroidScreen = () => {
     const handleLimitChange = (e) => {
         setLimit(Number(e.target.value));
         setCurrentPage(1); // Reset to first page when limit changes
+    };
+
+
+    const navigateToDetails = (id) => {
+        navigate(`/asteroid/${id}`);
     };
 
     return (
@@ -88,7 +97,7 @@ const AsteroidScreen = () => {
                             <td>{asteroid.absolute_magnitude_h}</td>
                             <td>{asteroid.is_potentially_hazardous_asteroid ? "Yes" : "No"}</td>
                             <td>
-                                <button className="btn btn-primary">View Details</button>
+                                <button onClick={navigateToDetails.bind(this, asteroid._id)} className="btn btn-primary">View Details</button>
                             </td>
                         </tr>
                     ))}
@@ -154,4 +163,4 @@ const Pagination = ({ currentPage, totalPages, setPage }) => {
     );
 };
 
-export default AsteroidScreen;
+export default AsteroidListScreen;

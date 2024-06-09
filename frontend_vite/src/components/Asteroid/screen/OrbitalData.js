@@ -1,0 +1,11 @@
+export const orbitalData = {
+    Sun: { color: 0xffff00, size: 0.02 },
+    Mercury: { color: 0xffc0cb, size: 0.02, semi_major_axis: 0.387, eccentricity: 0.206, inclination: 7.0, perihelion_argument: 77.456, ascending_node_longitude: 48.331, orbital_period: 87.97, mean_anomaly: 174.796, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Venus: { color: 0xffd700, size: 0.04, semi_major_axis: 0.723, eccentricity: 0.007, inclination: 3.39, perihelion_argument: 131.532, ascending_node_longitude: 76.680, orbital_period: 224.70, mean_anomaly: 50.115, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Earth: { color: 0x00ff00, size: 0.05, semi_major_axis: 1.000, eccentricity: 0.017, inclination: 0.0, perihelion_argument: 102.937, ascending_node_longitude: 0.0, orbital_period: 365.256, mean_anomaly: 358.617, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Mars: { color: 0xff0000, size: 0.03, semi_major_axis: 1.524, eccentricity: 0.093, inclination: 1.85, perihelion_argument: 336.040, ascending_node_longitude: 49.578, orbital_period: 686.980, mean_anomaly: 19.356, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Jupiter: { color: 0xffa500, size: 0.1, semi_major_axis: 5.203, eccentricity: 0.048, inclination: 1.30, perihelion_argument: 14.753, ascending_node_longitude: 100.492, orbital_period: 4332.59, mean_anomaly: 20.020, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Saturn: { color: 0xffff00, size: 0.09, semi_major_axis: 9.537, eccentricity: 0.054, inclination: 2.48, perihelion_argument: 92.598, ascending_node_longitude: 113.662, orbital_period: 10759.22, mean_anomaly: 317.020, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Uranus: { color: 0x00ffff, size: 0.08, semi_major_axis: 19.191, eccentricity: 0.047, inclination: 0.77, perihelion_argument: 170.964, ascending_node_longitude: 74.016, orbital_period: 30685.4, mean_anomaly: 142.238, orbit_determination_date: "2023-03-01T00:00:00Z" },
+    Neptune: { color: 0x0000ff, size: 0.08, semi_major_axis: 30.07, eccentricity: 0.009, inclination: 1.77, perihelion_argument: 44.971, ascending_node_longitude: 131.784, orbital_period: 60189.0, mean_anomaly: 256.228, orbit_determination_date: "2023-03-01T00:00:00Z" }
+};

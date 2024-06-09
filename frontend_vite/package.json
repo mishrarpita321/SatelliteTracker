@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^9.106.0",
+    "@react-three/fiber": "^8.16.8",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "cesium": "^1.118.2",
@@ -18,7 +20,8 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.2.1",
     "react-router-dom": "^6.23.1",
-    "resium": "^1.17.4"
+    "resium": "^1.17.4",
+    "three": "^0.165.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
