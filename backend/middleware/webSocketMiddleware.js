@@ -37,7 +37,7 @@ function setupWebSocketServer(server) {
 
 
         ws.on('close', () => {
-            console.log('WebSocket connection closed');
+            console.log('WebSocket connection closedTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
             connections.delete(ws); // Remove from global set on close
             // Clean up any subscriptions this connection had
             // AsteroidSubscribers.forEach((subs, asteroidId) => {

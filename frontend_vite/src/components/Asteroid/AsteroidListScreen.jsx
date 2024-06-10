@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API_ENDPOINTS } from "../../../constants/apiConstants";
+import { API_ENDPOINTS } from "../../constants/apiConstants";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./AsteroidListScreen.css";
 import { useNavigate } from "react-router-dom";

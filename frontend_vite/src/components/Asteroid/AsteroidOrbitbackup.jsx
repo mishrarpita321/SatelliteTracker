@@ -5,7 +5,7 @@ import { orbitalData } from './OrbitalData';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-import { useWebSocket } from '../../../context/WebSocketContext';
+import { useWebSocket } from '../../context/WebSocketContext';
 
 const SCALE_FACTOR = 1e-6; // Uniform scale factor for both orbits and positions
 const PLANET_SIZE = 1; // Fixed size for planets and sun

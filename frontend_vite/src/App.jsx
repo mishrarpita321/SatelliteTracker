@@ -6,8 +6,8 @@ import { useState } from 'react';
 import Home from './components/Home/Home';
 import { WebSocketProvider, useWebSocket } from './context/WebSocketContext';
 import SocketStatus from './components/Common/SocketStatus';
-import AsteroidListScreen from './components/Asteroid/screen/AsteroidListScreen';
-import AsteroidOrbit from './components/Asteroid/screen/AsteroidOrbit';
+import AsteroidListScreen from './components/Asteroid/AsteroidListScreen';
+import AsteroidOrbit from './components/Asteroid/AsteroidOrbit';
 
 function App() {
   const [selectedSatelliteName, setSelectedSatelliteName] = useState('');

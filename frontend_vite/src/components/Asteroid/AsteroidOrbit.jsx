@@ -3,21 +3,18 @@ import * as THREE from 'three';
 import { getOrbitalPosition } from './getOrbitalPosition';
 import { orbitalData } from './OrbitalData';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { useWebSocket } from '../../../context/WebSocketContext';
+import { useWebSocket } from '../../context/WebSocketContext';
 import { useParams } from 'react-router-dom';
 
 const SCALE_FACTOR = 1e-7; // Adjusted scale factor
 const PLANET_SIZE = 1; // Base size for planets
 
 const TIME_INTERVALS = {
-    '1sec': 1000,
-    '2hr': 2 * 60 * 60 * 1000,
-    '10hr': 10 * 60 * 60 * 1000,
     '1day': 24 * 60 * 60 * 1000,
     '5days': 5 * 24 * 60 * 60 * 1000,
     '1month': 30 * 24 * 60 * 60 * 1000,
+    '6month': 6 * 30 * 24 * 60 * 60 * 1000,
     '1year': 365 * 24 * 60 * 60 * 1000,
-    '100year': 100 * 365 * 24 * 60 * 60 * 1000,
 };
 
 const AsteroidOrbit = () => {
@@ -32,20 +29,34 @@ const AsteroidOrbit = () => {
     const [renderer, setRenderer] = useState(null);
     const [controls, setControls] = useState(null);
     const [simulationTime, setSimulationTime] = useState(new Date());
-    const [timeInterval, setTimeInterval] = useState(TIME_INTERVALS['1sec']);
+    const [timeInterval, setTimeInterval] = useState(TIME_INTERVALS['1day']);
     const [animationId, setAnimationId] = useState(null);
 
     const { sendMessage, addMessageHandler } = useWebSocket();
 
     const updatePlanetPositions = (newSimulationTime) => {
+        const deltaTime = 1; // One second interval
         pivotRef.current.children.forEach((child) => {
             if (child.name && orbitalData[child.name]) {
                 const data = orbitalData[child.name];
-                const position = getOrbitalPosition(data, newSimulationTime);
-                child.position.set(position.x * SCALE_FACTOR, position.y * SCALE_FACTOR, position.z * SCALE_FACTOR);
+                const targetPosition = getOrbitalPosition(data, newSimulationTime);
+
+                if (!child.userData.previousPosition) {
+                    child.userData.previousPosition = new THREE.Vector3().copy(child.position);
+                }
+
+                child.userData.targetPosition = new THREE.Vector3(
+                    targetPosition.x * SCALE_FACTOR,
+                    targetPosition.y * SCALE_FACTOR,
+                    targetPosition.z * SCALE_FACTOR
+                );
+
+                child.userData.elapsedTime = 0;
+                child.userData.deltaTime = deltaTime;
             }
         });
     };
+
 
     useEffect(() => {
         const width = mountRef.current.clientWidth;
@@ -181,6 +192,26 @@ const AsteroidOrbit = () => {
         const animate = () => {
             controls.update();
 
+            const lerpFactor = 0.1; // Adjust the lerp factor to control the speed of interpolation
+
+            pivotRef.current.children.forEach((child) => {
+                if (child.userData.targetPosition && child.userData.previousPosition) {
+                    child.userData.elapsedTime += lerpFactor;
+                    const progress = child.userData.elapsedTime / child.userData.deltaTime;
+
+                    if (progress < 1) {
+                        child.position.lerpVectors(
+                            child.userData.previousPosition,
+                            child.userData.targetPosition,
+                            progress
+                        );
+                    } else {
+                        child.position.copy(child.userData.targetPosition);
+                        child.userData.previousPosition = new THREE.Vector3().copy(child.userData.targetPosition);
+                    }
+                }
+            });
+
             // Update label positions to always face the camera
             labelsRef.current.forEach((label) => {
                 label.lookAt(camera.position);
@@ -190,6 +221,7 @@ const AsteroidOrbit = () => {
 
             setAnimationId(requestAnimationFrame(animate));
         };
+
 
         animate();
         const intervalId = setInterval(updateSimulationTime, 1000);
@@ -231,7 +263,7 @@ const AsteroidOrbit = () => {
         setControls(controls);
 
         return () => {
-            if (renderer) {
+            if (renderer && mountRef.current != null) {
                 mountRef.current.removeChild(renderer.domElement);
             }
             document.removeEventListener('mousedown', onDocumentMouseDown);
@@ -239,6 +271,12 @@ const AsteroidOrbit = () => {
             document.removeEventListener('mouseup', onDocumentMouseUp);
             cancelAnimationFrame(animationId);
             clearInterval(intervalId);
+
+            sendMessage({
+                type: 'stopAsteroidTracking',
+                id: selectedAsteroId,
+                simulatedInterval: timeInterval,
+            }).catch(err => console.error('Failed to send stop message', err));
         };
     }, [addMessageHandler, sendMessage, selectedAsteroId, timeInterval]);
 
@@ -263,14 +301,11 @@ const AsteroidOrbit = () => {
             <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1, color: 'white' }}>
                 <label htmlFor="time-interval">Time Interval: </label>
                 <select id="time-interval" onChange={handleTimeIntervalChange}>
-                    <option value="1sec">1 Second</option>
-                    <option value="2hr">2 Hours</option>
-                    <option value="10hr">10 Hours</option>
                     <option value="1day">1 Day</option>
                     <option value="5days">5 Days</option>
                     <option value="1month">1 Month</option>
-                    <option value="1year">1 Year</option>
-                    <option value="100year">100 Years</option>
+                    <option value="6month">6 months</option>
+                    <option value="1year">1 Years</option>
                 </select>
                 <div>
                     Current Simulation Time: {simulationTime.toUTCString()}

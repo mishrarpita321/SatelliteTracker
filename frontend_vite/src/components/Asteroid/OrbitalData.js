@@ -55,14 +55,14 @@ export const orbitalData = {
         perihelion_argument: 44.971, ascending_node_longitude: 131.784,
         orbital_period: 60189.0, mean_anomaly: 256.228,
         orbit_determination_date: "2023-03-01T00:00:00Z"
-    },
-    TestAsteroid: {
-        color: 0xff00ff, size: 0.08,
-        semi_major_axis: 1.926281479504115, eccentricity: .6539754427868308, inclination: 9.553577274325484,
-        perihelion_argument: 89.73368142743361, ascending_node_longitude: 23.96626072674418,
-        orbital_period: 976.5130476604551, mean_anomaly: 141.1881401390145,
-        orbit_determination_date: "2023-06-10 06:23:19"
     }
+    // TestAsteroid: {
+    //     color: 0xff00ff, size: 0.08,
+    //     semi_major_axis: 1.926281479504115, eccentricity: .6539754427868308, inclination: 9.553577274325484,
+    //     perihelion_argument: 89.73368142743361, ascending_node_longitude: 23.96626072674418,
+    //     orbital_period: 976.5130476604551, mean_anomaly: 141.1881401390145,
+    //     orbit_determination_date: "2023-06-10 06:23:19"
+    // }
 };
 
 

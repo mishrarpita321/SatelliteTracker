@@ -1,7 +1,10 @@
 const { WebSocket } = require("ws");
 const { getAsteroidOrbitalPosition, getOtbitalDatabyId } = require("../utils/predictAsteroidPosition");
 
+const simulatedTimes = new Map(); // Store the last simulated time independently
+
 function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
+    console.log('previousSimulatedIntervalRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR:', ws.previousSimulatedInterval)
     const asteroidId = data.id;
     const simulatedInterval = data.simulatedInterval;
 
@@ -23,7 +26,7 @@ function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
     if (!updateIntervals.has(asteroidId)) {
         getOtbitalDatabyId(asteroidId)
             .then(orbitalData => {
-                let simulatedTime = new Date();
+                let simulatedTime = simulatedTimes.get(asteroidId) || new Date();
                 const intervalId = setInterval(async () => {
                     simulatedTime = new Date(simulatedTime.getTime() + simulatedInterval);
                     const position = await getAsteroidOrbitalPosition(orbitalData, simulatedTime);
@@ -35,7 +38,7 @@ function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
                         simulatedTime: simulatedTime.toISOString()
                     });
 
-                    console.log('Simulated time:', simulatedTime.toISOString());
+                    console.log('Simulated time:', simulatedTime.toISOString(), 'for asteroid:', asteroidId);
 
                     asteroidSubs.forEach((intervalSubs, interval) => {
                         intervalSubs.forEach(client => {
@@ -44,6 +47,9 @@ function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
                             }
                         });
                     });
+
+                    // Store the last simulated time
+                    simulatedTimes.set(asteroidId, simulatedTime);
                 }, 1000); // Run every second
                 updateIntervals.set(asteroidId, intervalId);
             })
@@ -53,7 +59,7 @@ function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
     }
 }
 
-function unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
+function unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data, from = 'close') {
     const asteroidId = data.id;
     const simulatedInterval = data.simulatedInterval;
     const asteroidSubs = AsteroidSubscribers.get(asteroidId);
@@ -63,13 +69,17 @@ function unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data)
             intervalSubs.delete(ws);
             if (intervalSubs.size === 0) {
                 asteroidSubs.delete(simulatedInterval);
-                if (asteroidSubs.size === 0) {
-                    clearInterval(updateIntervals.get(asteroidId));
-                    updateIntervals.delete(asteroidId);
-                    AsteroidSubscribers.delete(asteroidId);
-                    console.log(`Stopped tracking asteroid ${asteroidId} due to no subscribers.`);
-                }
             }
+        }
+
+        if (asteroidSubs.size === 0) {
+            clearInterval(updateIntervals.get(asteroidId));
+            updateIntervals.delete(asteroidId);
+            AsteroidSubscribers.delete(asteroidId);
+            if (from === 'close') {
+                simulatedTimes.delete(asteroidId);
+            }
+            console.log(`Stopped tracking asteroid ${asteroidId} due to no subscribers.`);
         }
     }
 }
@@ -77,12 +87,19 @@ function unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data)
 function handleIntervalChange(ws, updateIntervals, AsteroidSubscribers, data) {
     const previousData = { ...data, simulatedInterval: ws.previousSimulatedInterval };
     console.log('Unsubscribing from previous interval:', ws.previousSimulatedInterval);
-    unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, previousData);
 
     ws.previousSimulatedInterval = data.simulatedInterval;
 
     console.log('Subscribing to new interval:', data.simulatedInterval);
-    subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data);
+
+    const asteroidId = data.id;
+    const lastSimulatedTime = simulatedTimes.get(asteroidId) || new Date();
+
+    unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, previousData, from = 'intervalChange');
+    subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, {
+        ...data,
+        simulatedTime: lastSimulatedTime
+    });
 }
 
 module.exports = { subscribeToAsteroid, unsubscribeFromAsteroid, handleIntervalChange };
