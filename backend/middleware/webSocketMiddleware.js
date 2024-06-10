@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups } = require('./driftSatellitesMiddleware');
-const { subscribeToAsteroid, unsubscribeFromAsteroid } = require('./asteroidMiddleware');
+const { subscribeToAsteroid, unsubscribeFromAsteroid, handleIntervalChange } = require('./asteroidMiddleware');
 // const { getFakeAsteroidOrbitalPosition } = require('../utils/predictPosition');
 
 // Store all active connections for broad messaging
@@ -40,13 +40,26 @@ function setupWebSocketServer(server) {
             console.log('WebSocket connection closed');
             connections.delete(ws); // Remove from global set on close
             // Clean up any subscriptions this connection had
-            AsteroidSubscribers.forEach((subs, asteroidId) => {
-                subs.delete(ws);
-                if (subs.size === 0) {
-                    clearInterval(updateIntervals.get(asteroidId));
-                    updateIntervals.delete(asteroidId);
-                    AsteroidSubscribers.delete(asteroidId);
-                }
+            // AsteroidSubscribers.forEach((subs, asteroidId) => {
+            //     subs.delete(ws);
+            //     if (subs.size === 0) {
+            //         clearInterval(updateIntervals.get(asteroidId));
+            //         updateIntervals.delete(asteroidId);
+            //         AsteroidSubscribers.delete(asteroidId);
+            //     }
+            // });
+            AsteroidSubscribers.forEach((asteroidSubs, asteroidId) => {
+                asteroidSubs.forEach((intervalSubs, simulatedInterval) => {
+                    intervalSubs.delete(ws);
+                    if (intervalSubs.size === 0) {
+                        asteroidSubs.delete(simulatedInterval);
+                        if (asteroidSubs.size === 0) {
+                            clearInterval(updateIntervals.get(asteroidId));
+                            updateIntervals.delete(asteroidId);
+                            AsteroidSubscribers.delete(asteroidId);
+                        }
+                    }
+                });
             });
             satelliteGroupSubscribers.forEach((subs, group) => {
                 subs.delete(ws);
@@ -65,17 +78,20 @@ function handleClientMessage(ws, data) {
     switch (data.type) {
         case 'requestAsteroidPosition':
             // subscribeToAsteroid(ws, data.asteroidId);
-            subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data.id);
+            subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data);
+            break;
+        case 'changeInterval':
+            handleIntervalChange(ws, updateIntervals, AsteroidSubscribers, data);
             break;
         case 'stopAsteroidTracking':
-            unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data.id);
+            unsubscribeFromAsteroid(ws, updateIntervals, AsteroidSubscribers, data);
             break;
         case 'requestSatelliteGroupPosition':
-            subscribeToSatelliteGroups(ws,updateIntervals, satelliteGroupSubscribers , data.group);
+            subscribeToSatelliteGroups(ws, updateIntervals, satelliteGroupSubscribers, data.group);
             console.log('Satellite group start:', data.group);
             break;
         case 'stopSatelliteGroupTracking':
-            unsubscribeToSatelliteGroups(ws,updateIntervals, satelliteGroupSubscribers , data.group);
+            unsubscribeToSatelliteGroups(ws, updateIntervals, satelliteGroupSubscribers, data.group);
             console.log('Satellite group stop:', data.group);
             break;
         default:

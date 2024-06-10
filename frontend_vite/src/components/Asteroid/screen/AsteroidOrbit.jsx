@@ -3,20 +3,26 @@ import * as THREE from 'three';
 import { getOrbitalPosition } from './getOrbitalPosition';
 import { orbitalData } from './OrbitalData';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { useWebSocket } from '../../../context/WebSocketContext';
 import { useParams } from 'react-router-dom';
 
 const SCALE_FACTOR = 1e-7; // Adjusted scale factor
 const PLANET_SIZE = 1; // Base size for planets
 
+const TIME_INTERVALS = {
+    '1sec': 1000,
+    '2hr': 2 * 60 * 60 * 1000,
+    '10hr': 10 * 60 * 60 * 1000,
+    '1day': 24 * 60 * 60 * 1000,
+    '5days': 5 * 24 * 60 * 60 * 1000,
+    '1month': 30 * 24 * 60 * 60 * 1000,
+    '1year': 365 * 24 * 60 * 60 * 1000,
+    '100year': 100 *365 * 24 * 60 * 60 * 1000,
+};
+
 const AsteroidOrbit = () => {
     const { asteroidId } = useParams();
     const selectedAsteroId = asteroidId;
-    // Rest of your code...
-
-    // const selectedAsteroId = null;
     const mountRef = useRef(null);
     const asteroidRef = useRef(null);
     const labelsRef = useRef([]);
@@ -25,8 +31,21 @@ const AsteroidOrbit = () => {
     const [camera, setCamera] = useState(null);
     const [renderer, setRenderer] = useState(null);
     const [controls, setControls] = useState(null);
+    const [simulationTime, setSimulationTime] = useState(new Date());
+    const [timeInterval, setTimeInterval] = useState(TIME_INTERVALS['1sec']);
+    const [animationId, setAnimationId] = useState(null);
 
     const { sendMessage, addMessageHandler } = useWebSocket();
+
+    const updatePlanetPositions = (newSimulationTime) => {
+        pivotRef.current.children.forEach((child) => {
+            if (child.name && orbitalData[child.name]) {
+                const data = orbitalData[child.name];
+                const position = getOrbitalPosition(data, newSimulationTime);
+                child.position.set(position.x * SCALE_FACTOR, position.y * SCALE_FACTOR, position.z * SCALE_FACTOR);
+            }
+        });
+    };
 
     useEffect(() => {
         const width = mountRef.current.clientWidth;
@@ -36,7 +55,8 @@ const AsteroidOrbit = () => {
         scene.background = new THREE.Color(0x000000); // Set background color
 
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100000); // Increased far plane
-        camera.position.set(0, -25, 30);
+        // camera.position.set(0, -25, 30);
+        camera.position.set(-10, -10, 40);
 
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(width, height);
@@ -116,7 +136,7 @@ const AsteroidOrbit = () => {
         Object.keys(orbitalData).forEach((key) => {
             if (key !== 'Sun') {
                 const data = orbitalData[key];
-                const position = getOrbitalPosition(data, new Date());
+                const position = getOrbitalPosition(data, simulationTime.toISOString());
                 const planet = createPlanet(key, position, data.color, PLANET_SIZE);
                 const orbit = createOrbit(data.semi_major_axis, data.eccentricity, data.inclination, data.perihelion_argument, data.ascending_node_longitude, data.color);
                 pivotRef.current.add(planet); // Add planet to the pivot
@@ -126,7 +146,14 @@ const AsteroidOrbit = () => {
 
         const handleAsteroidPosition = (data) => {
             if (data.type === 'asteroidPosition') {
-                const { position, orbitalData } = data;
+                const { position, orbitalData, simulatedTime } = data;
+                // console.log('Asteroid Position:', position, 'Orbital Data:', orbitalData, 'Simulated Time:', simulatedTime);
+                const newSimulationTime = new Date(simulatedTime);
+                const gtmTime = newSimulationTime.toISOString();
+                // console.log('New Simulation Time:', newSimulationTime);
+                // console.log('New Simulation Time:', gtmTime);
+                setSimulationTime(newSimulationTime);
+                updatePlanetPositions(gtmTime);
                 const orbit = createOrbit(orbitalData.semi_major_axis, orbitalData.eccentricity, orbitalData.inclination, orbitalData.perihelion_argument, orbitalData.ascending_node_longitude, 0xffffff);
                 if (asteroidRef.current) {
                     pivotRef.current.remove(asteroidRef.current);
@@ -141,17 +168,21 @@ const AsteroidOrbit = () => {
         addMessageHandler(handleAsteroidPosition);
 
         if (selectedAsteroId !== null) {
-            console.log("Requesting asteroid position for:", selectedAsteroId);
+            console.log("Requesting asteroid position for:", timeInterval);
             sendMessage({
                 type: 'requestAsteroidPosition',
-                id: selectedAsteroId
+                id: selectedAsteroId,
+                simulatedInterval: timeInterval,
             }).catch(err => {
                 console.error('WebSocket send error:', err);
             });
         }
 
+        const updateSimulationTime = () => {
+            setSimulationTime(prevTime => new Date(prevTime.getTime() + timeInterval));
+        };
+
         const animate = () => {
-            requestAnimationFrame(animate);
             controls.update();
 
             // Update label positions to always face the camera
@@ -160,9 +191,12 @@ const AsteroidOrbit = () => {
             });
 
             renderer.render(scene, camera);
+
+            setAnimationId(requestAnimationFrame(animate));
         };
 
         animate();
+        const intervalId = setInterval(updateSimulationTime, 1000);
 
         let isDragging = false;
         let previousMousePosition = {
@@ -178,7 +212,6 @@ const AsteroidOrbit = () => {
             if (isDragging) {
                 const deltaX = event.clientX - previousMousePosition.x;
                 const deltaY = event.clientY - previousMousePosition.y;
-
                 pivotRef.current.rotation.z += deltaX * 0.005;
                 pivotRef.current.rotation.x += deltaY * 0.005;
             }
@@ -208,12 +241,49 @@ const AsteroidOrbit = () => {
             document.removeEventListener('mousedown', onDocumentMouseDown);
             document.removeEventListener('mousemove', onDocumentMouseMove);
             document.removeEventListener('mouseup', onDocumentMouseUp);
+            cancelAnimationFrame(animationId);
+            clearInterval(intervalId);
         };
-    }, [addMessageHandler, sendMessage, selectedAsteroId]);
+    }, [addMessageHandler, sendMessage, selectedAsteroId, timeInterval]);
+
+    const handleTimeIntervalChange = (event) => {
+        const newInterval = TIME_INTERVALS[event.target.value];
+        setTimeInterval(newInterval);
+
+        // Send the interval change message to the backend
+        if (selectedAsteroId !== null) {
+            sendMessage({
+                type: 'changeInterval',
+                id: selectedAsteroId,
+                simulatedInterval: newInterval,
+            }).catch(err => {
+                console.error('WebSocket send error:', err);
+            });
+        }
+    };
 
     return (
-        <div ref={mountRef} style={{ width: '100%', height: '100vh' }} />
+        <div>
+            <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1, color: 'white' }}>
+                <label htmlFor="time-interval">Time Interval: </label>
+                <select id="time-interval" onChange={handleTimeIntervalChange}>
+                    <option value="1sec">1 Second</option>
+                    <option value="2hr">2 Hours</option>
+                    <option value="10hr">10 Hours</option>
+                    <option value="1day">1 Day</option>
+                    <option value="5days">5 Days</option>
+                    <option value="1month">1 Month</option>
+                    <option value="1year">1 Year</option>
+                    <option value="100year">100 Year</option>
+                </select>
+                <div>
+                    Current Simulation Time: {simulationTime.toUTCString()}
+                </div>
+            </div>
+            <div ref={mountRef} style={{ width: '100%', height: '100vh' }} />
+        </div>
     );
 };
 
 export default AsteroidOrbit;
+

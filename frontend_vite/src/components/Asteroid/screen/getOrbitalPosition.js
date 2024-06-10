@@ -20,6 +20,7 @@ export const getOrbitalPosition = (orbitalData, date) => {
 
     // Convert date string to Date object if necessary
     const currentDate = (typeof date === 'string') ? new Date(date) : date;
+    console.log('currentDate:', currentDate);
 
     // Calculate the mean anomaly at the given date
     const epoch = new Date(orbitalData.orbit_determination_date); // Epoch date
@@ -28,28 +29,37 @@ export const getOrbitalPosition = (orbitalData, date) => {
         return { x: 0, y: 0, z: 0 };
     }
     const timeDifference = (currentDate - epoch) / (1000 * 3600 * 24); // Difference in days
-    const n = Math.sqrt(mu / Math.pow(a, 3)); // Mean motion in radians per day
+    console.log('timeDifference (days):', timeDifference);
+
+    const n = Math.sqrt(mu / Math.pow(a, 3)); // Mean motion in radians per second
+    console.log('mean motion (radians per second):', n);
+
     const M0 = parseFloat(orbitalData.mean_anomaly) * Math.PI / 180; // Initial mean anomaly in radians
     let M = M0 + n * timeDifference; // Mean anomaly at the given date
+    console.log('Initial Mean Anomaly (M0):', M0);
+    console.log('Mean Anomaly at current date (M):', M);
 
     // Normalize M to be within 0 to 2π
     M = M % (2 * Math.PI);
-
-    console.log('M:', M);
+    console.log('Normalized Mean Anomaly (M):', M);
 
     // Solve Kepler's equation for eccentric anomaly, E
     let E = solveKeplersEquation(e, M);
+    console.log('Eccentric Anomaly (E):', E);
 
     // True anomaly, v
     const v = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+    console.log('True Anomaly (v):', v);
 
     // Distance to the Sun, r
     const r = a * (1 - e * Math.cos(E));
+    console.log('Distance to the Sun (r):', r);
 
     // Heliocentric coordinates in the orbital plane
     const x = r * (Math.cos(Omega) * Math.cos(omega + v) - Math.sin(Omega) * Math.sin(omega + v) * Math.cos(I));
     const y = r * (Math.sin(Omega) * Math.cos(omega + v) + Math.cos(Omega) * Math.sin(omega + v) * Math.cos(I));
     const z = r * Math.sin(I) * Math.sin(omega + v);
+    console.log('x:', x, 'y:', y, 'z:', z);
 
     return { x, y, z };
 }

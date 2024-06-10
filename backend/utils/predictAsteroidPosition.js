@@ -1,6 +1,8 @@
 const { neo4jDriver } = require('../config/db');
 
 function getAsteroidOrbitalPosition(orbitalData, date) {
+    console.log('date:', date); 
+    // date = new Date('2197-11-04T08:03:00.200Z');
     const mu = 132712440018; // Standard gravitational parameter for the sun in km^3/s^2
     const a = parseFloat(orbitalData.semi_major_axis) * 149597870.7; // Semi-major axis in km
     const e = parseFloat(orbitalData.eccentricity);
@@ -10,6 +12,7 @@ function getAsteroidOrbitalPosition(orbitalData, date) {
 
     // Convert date string to Date object if necessary
     const currentDate = (typeof date === 'string') ? new Date(date) : date;
+    console.log('currentDate:', currentDate);
 
     // Calculate the mean anomaly at the given date
     const epoch = new Date(orbitalData.orbit_determination_date); // Epoch date
@@ -25,7 +28,7 @@ function getAsteroidOrbitalPosition(orbitalData, date) {
     // Normalize M to be within 0 to 2π
     M = M % (2 * Math.PI);
 
-    console.log('M:', M);
+    // console.log('M:', M);
 
     // Solve Kepler's equation for eccentric anomaly, E
     let E = solveKeplersEquation(e, M);
@@ -40,8 +43,8 @@ function getAsteroidOrbitalPosition(orbitalData, date) {
     const x = r * (Math.cos(Omega) * Math.cos(omega + v) - Math.sin(Omega) * Math.sin(omega + v) * Math.cos(I));
     const y = r * (Math.sin(Omega) * Math.cos(omega + v) + Math.cos(Omega) * Math.sin(omega + v) * Math.cos(I));
     const z = r * Math.sin(I) * Math.sin(omega + v);
-
-    return { x, y, z };
+console.log('x:', x, 'y:', y, 'z:', z)
+    return { x, y, z , date: currentDate.toISOString()};
 }
 
 function solveKeplersEquation(e, M) {

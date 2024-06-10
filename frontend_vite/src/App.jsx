@@ -20,7 +20,7 @@ function App() {
           <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} />} />
           <Route path="/drift" element={<DriftVisualisation satName={selectedSatelliteName} />} />
           <Route path="/asteroids" element={<AsteroidListScreen />} />
-          <Route path="/asteroid/:asteroidId" element={<AsteroidOrbit selectedAsteroId="2038091" />} />
+          <Route path="/asteroid/:asteroidId" element={<AsteroidOrbit/>} />
           <Route path="/" element={<Home />} />
         </Routes>
       </BrowserRouter>
