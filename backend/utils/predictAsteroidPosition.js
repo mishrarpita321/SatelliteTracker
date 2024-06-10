@@ -1,14 +1,16 @@
 const { neo4jDriver } = require('../config/db');
 
 function getAsteroidOrbitalPosition(orbitalData, date) {
-    console.log('date:', date); 
-    // date = new Date('2197-11-04T08:03:00.200Z');
+    console.log('date:', date);
+    // date = new Date('2026-10-10T00:00:00Z').toISOString();
     const mu = 132712440018; // Standard gravitational parameter for the sun in km^3/s^2
     const a = parseFloat(orbitalData.semi_major_axis) * 149597870.7; // Semi-major axis in km
     const e = parseFloat(orbitalData.eccentricity);
     const I = parseFloat(orbitalData.inclination) * Math.PI / 180; // Inclination in radians
     const omega = parseFloat(orbitalData.perihelion_argument) * Math.PI / 180; // Argument of periapsis in radians
     const Omega = parseFloat(orbitalData.ascending_node_longitude) * Math.PI / 180; // Longitude of ascending node in radians
+
+    console.log('a:', a, 'semi_major_axis', orbitalData.semi_major_axis, 'e:', e, 'I:', I, 'omega:', omega, 'Omega:', Omega);
 
     // Convert date string to Date object if necessary
     const currentDate = (typeof date === 'string') ? new Date(date) : date;
@@ -21,14 +23,13 @@ function getAsteroidOrbitalPosition(orbitalData, date) {
         return { x: 0, y: 0, z: 0 };
     }
     const timeDifference = (currentDate - epoch) / (1000 * 3600 * 24); // Difference in days
-    const n = Math.sqrt(mu / Math.pow(a, 3)); // Mean motion in radians per day
+    const n = Math.sqrt(mu / Math.pow(a, 3)) * 86400; // Mean motion in radians per day
+    
     const M0 = parseFloat(orbitalData.mean_anomaly) * Math.PI / 180; // Initial mean anomaly in radians
     let M = M0 + n * timeDifference; // Mean anomaly at the given date
 
     // Normalize M to be within 0 to 2π
     M = M % (2 * Math.PI);
-
-    // console.log('M:', M);
 
     // Solve Kepler's equation for eccentric anomaly, E
     let E = solveKeplersEquation(e, M);
@@ -43,8 +44,9 @@ function getAsteroidOrbitalPosition(orbitalData, date) {
     const x = r * (Math.cos(Omega) * Math.cos(omega + v) - Math.sin(Omega) * Math.sin(omega + v) * Math.cos(I));
     const y = r * (Math.sin(Omega) * Math.cos(omega + v) + Math.cos(Omega) * Math.sin(omega + v) * Math.cos(I));
     const z = r * Math.sin(I) * Math.sin(omega + v);
-console.log('x:', x, 'y:', y, 'z:', z)
-    return { x, y, z , date: currentDate.toISOString()};
+
+    console.log('x:', x, 'y:', y, 'z:', z);
+    return { x, y, z, date: currentDate.toISOString() };
 }
 
 function solveKeplersEquation(e, M) {
@@ -57,25 +59,8 @@ function solveKeplersEquation(e, M) {
     return E;
 }
 
-const getFakeAsteroidOrbitalPosition = async (asteroidId) => {
-    // Simulated function to fetch asteroid position
-    // In a real scenario, replace this with actual data fetching logic
-    return {
-        x: Math.random() * 1000,
-        y: Math.random() * 1000,
-        z: Math.random() * 1000
-    };
-};
-
-
-
-
-
-
 // Placeholder function to fetch orbital data by ID
-// In a real scenario, replace this with actual data fetching logic
 const getOtbitalDatabyId = async (asteroidId) => {
-    // Run the query to fetch the orbital data by ID
     const session = neo4jDriver.session({ database: 'asteroids' });
     const result = await session.run(
         'MATCH (n:Asteroid)-[r:HAS_ORBITAL_DATA]->(od:OrbitalData) WHERE n.id = $asteroidId RETURN n, r, od',
@@ -99,4 +84,4 @@ const getOtbitalDatabyId = async (asteroidId) => {
     return orbitalData;
 }
 
-module.exports = { getAsteroidOrbitalPosition, getFakeAsteroidOrbitalPosition, getOtbitalDatabyId };
+module.exports = { getAsteroidOrbitalPosition, getOtbitalDatabyId };

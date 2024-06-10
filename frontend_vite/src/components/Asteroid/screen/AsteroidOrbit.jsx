@@ -17,7 +17,7 @@ const TIME_INTERVALS = {
     '5days': 5 * 24 * 60 * 60 * 1000,
     '1month': 30 * 24 * 60 * 60 * 1000,
     '1year': 365 * 24 * 60 * 60 * 1000,
-    '100year': 100 *365 * 24 * 60 * 60 * 1000,
+    '100year': 100 * 365 * 24 * 60 * 60 * 1000,
 };
 
 const AsteroidOrbit = () => {
@@ -55,7 +55,6 @@ const AsteroidOrbit = () => {
         scene.background = new THREE.Color(0x000000); // Set background color
 
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100000); // Increased far plane
-        // camera.position.set(0, -25, 30);
         camera.position.set(-10, -10, 40);
 
         const renderer = new THREE.WebGLRenderer();
@@ -147,11 +146,8 @@ const AsteroidOrbit = () => {
         const handleAsteroidPosition = (data) => {
             if (data.type === 'asteroidPosition') {
                 const { position, orbitalData, simulatedTime } = data;
-                // console.log('Asteroid Position:', position, 'Orbital Data:', orbitalData, 'Simulated Time:', simulatedTime);
                 const newSimulationTime = new Date(simulatedTime);
                 const gtmTime = newSimulationTime.toISOString();
-                // console.log('New Simulation Time:', newSimulationTime);
-                // console.log('New Simulation Time:', gtmTime);
                 setSimulationTime(newSimulationTime);
                 updatePlanetPositions(gtmTime);
                 const orbit = createOrbit(orbitalData.semi_major_axis, orbitalData.eccentricity, orbitalData.inclination, orbitalData.perihelion_argument, orbitalData.ascending_node_longitude, 0xffffff);
@@ -274,7 +270,7 @@ const AsteroidOrbit = () => {
                     <option value="5days">5 Days</option>
                     <option value="1month">1 Month</option>
                     <option value="1year">1 Year</option>
-                    <option value="100year">100 Year</option>
+                    <option value="100year">100 Years</option>
                 </select>
                 <div>
                     Current Simulation Time: {simulationTime.toUTCString()}
@@ -286,4 +282,3 @@ const AsteroidOrbit = () => {
 };
 
 export default AsteroidOrbit;
-
