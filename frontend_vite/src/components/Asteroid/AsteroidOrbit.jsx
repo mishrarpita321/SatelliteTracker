@@ -18,6 +18,7 @@ const TIME_INTERVALS = {
 };
 
 const AsteroidOrbit = () => {
+    const { connectionStatus} = useWebSocket();
     const { asteroidId } = useParams();
     const selectedAsteroId = asteroidId;
     const mountRef = useRef(null);
@@ -186,7 +187,10 @@ const AsteroidOrbit = () => {
         }
 
         const updateSimulationTime = () => {
-            setSimulationTime(prevTime => new Date(prevTime.getTime() + timeInterval));
+            console.log("connection", connectionStatus)
+            if (connectionStatus=="WebSocket connected") {
+                setSimulationTime(prevTime => new Date(prevTime.getTime() + timeInterval));
+            }
         };
 
         const animate = () => {
@@ -224,6 +228,7 @@ const AsteroidOrbit = () => {
 
 
         animate();
+
         const intervalId = setInterval(updateSimulationTime, 1000);
 
         let isDragging = false;
