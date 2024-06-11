@@ -35,8 +35,8 @@ export const getOrbitalPosition = (orbitalData, date) => {
     const M0 = parseFloat(orbitalData.mean_anomaly) * Math.PI / 180; // Initial mean anomaly in radians
     let M = M0 + n * timeDifference; // Mean anomaly at the given date
 
-    console.log('currentDate:', currentDateCET);
-    console.log('epoch:', epoch);
+    // console.log('currentDate:', currentDateCET);
+    // console.log('epoch:', epoch);
 
     M = M % (2 * Math.PI);
 

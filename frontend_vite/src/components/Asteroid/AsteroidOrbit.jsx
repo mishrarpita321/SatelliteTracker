@@ -4,7 +4,7 @@ import { getOrbitalPosition } from './getOrbitalPosition';
 import { orbitalData } from './OrbitalData';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useWebSocket } from '../../context/WebSocketContext';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const SCALE_FACTOR = 1e-7; // Adjusted scale factor
 const PLANET_SIZE = 1; // Base size for planets
@@ -18,7 +18,7 @@ const TIME_INTERVALS = {
 };
 
 const AsteroidOrbit = () => {
-    const { connectionStatus} = useWebSocket();
+    const { connectionStatus } = useWebSocket();
     const { asteroidId } = useParams();
     const selectedAsteroId = asteroidId;
     const mountRef = useRef(null);
@@ -34,6 +34,8 @@ const AsteroidOrbit = () => {
     const [animationId, setAnimationId] = useState(null);
 
     const { sendMessage, addMessageHandler } = useWebSocket();
+    const navigate = useNavigate();
+
 
     const updatePlanetPositions = (newSimulationTime) => {
         const deltaTime = 1; // One second interval
@@ -188,7 +190,7 @@ const AsteroidOrbit = () => {
 
         const updateSimulationTime = () => {
             console.log("connection", connectionStatus)
-            if (connectionStatus=="WebSocket connected") {
+            if (connectionStatus == "WebSocket connected") {
                 setSimulationTime(prevTime => new Date(prevTime.getTime() + timeInterval));
             }
         };
@@ -312,6 +314,11 @@ const AsteroidOrbit = () => {
                     <option value="6month">6 months</option>
                     <option value="1year">1 Years</option>
                 </select>
+                <div>
+
+                </div>
+                <button onClick={() => { console.log("ss"); navigate(`/asteroid/details/${asteroidId}`); }
+                }>View Details</button>
                 <div>
                     Current Simulation Time: {simulationTime.toUTCString()}
                 </div>

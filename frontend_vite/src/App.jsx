@@ -8,6 +8,7 @@ import { WebSocketProvider, useWebSocket } from './context/WebSocketContext';
 import SocketStatus from './components/Common/SocketStatus';
 import AsteroidListScreen from './components/Asteroid/AsteroidListScreen';
 import AsteroidOrbit from './components/Asteroid/AsteroidOrbit';
+import TestPage from './components/Asteroid/Leaf/Test';
 
 function App() {
   const [selectedSatelliteName, setSelectedSatelliteName] = useState('');
@@ -21,6 +22,7 @@ function App() {
           <Route path="/drift" element={<DriftVisualisation satName={selectedSatelliteName} />} />
           <Route path="/asteroids" element={<AsteroidListScreen />} />
           <Route path="/asteroid/:asteroidId" element={<AsteroidOrbit/>} />
+          <Route path="/asteroid/details/:asteroidId" element={<TestPage/>} />
           <Route path="/" element={<Home />} />
         </Routes>
       </BrowserRouter>
