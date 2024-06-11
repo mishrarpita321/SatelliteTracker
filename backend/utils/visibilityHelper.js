@@ -10,27 +10,77 @@ function toDegrees(radians) {
     return radians * 180 / Math.PI;
 }
 
-// Calculate the latitude and longitude from miss distance
-function calculateLatLonFromMissDistance(initialLat, initialLon, distanceKm, bearing) {
-    const R = 6371; // Radius of the Earth in kilometers
-    const bearingRad = toRadians(bearing);
+// Calculate the true anomaly from mean anomaly and eccentricity
+function calculateTrueAnomaly(meanAnomaly, eccentricity) {
+    console.log('meanAnomaly: ', meanAnomaly, 'eccentricity: ', eccentricity)
+    let eccentricAnomaly = meanAnomaly;
+    const epsilon = 1e-6;
 
-    const lat1 = toRadians(initialLat);
-    const lon1 = toRadians(initialLon);
+    while (true) {
+        const deltaE = (meanAnomaly + eccentricity * Math.sin(eccentricAnomaly) - eccentricAnomaly) / (1 - eccentricity * Math.cos(eccentricAnomaly));
+        eccentricAnomaly += deltaE;
+        if (Math.abs(deltaE) < epsilon) break;
+    }
+    console.log('eccentricAnomaly: ', eccentricAnomaly)
 
-    const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distanceKm / R) +
-                           Math.cos(lat1) * Math.sin(distanceKm / R) * Math.cos(bearingRad));
-    const lon2 = lon1 + Math.atan2(Math.sin(bearingRad) * Math.sin(distanceKm / R) * Math.cos(lat1),
-                                   Math.cos(distanceKm / R) - Math.sin(lat1) * Math.sin(lat2));
+    const trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + eccentricity) * Math.sin(eccentricAnomaly / 2), Math.sqrt(1 - eccentricity) * Math.cos(eccentricAnomaly / 2));
+    console.log('trueAnomaly: ', trueAnomaly)
+    return trueAnomaly;
+}
 
-    return {
-        latitude: toDegrees(lat2),
-        longitude: toDegrees(lon2)
-    };
+// Calculate the position in the orbital plane
+function calculatePosition(orbitalElements, epoch, timeOfCloseApproach) {
+    const { semi_major_axis: a, eccentricity: e, inclination: i, ascending_node_longitude: Ω, perihelion_argument: ω, mean_anomaly: M, mean_motion: n, epoch_osculation: t0 } = orbitalElements;
+    console.log('semi_major_axis: ', a, 'eccentricity: ', e, 'inclination: ', i, 'ascending_node_longitude: ', Ω, 'perihelion_argument: ', ω, 'mean_anomaly: ', M, 'mean_motion: ', n, 'epoch_osculation: ', t0, 'epoch: ', epoch, 'timeOfCloseApproach: ', timeOfCloseApproach)
+    const iRad = toRadians(parseFloat(i));
+    const ΩRad = toRadians(parseFloat(Ω));
+    const ωRad = toRadians(parseFloat(ω));
+    const M0 = toRadians(parseFloat(M));
+    const t0JD = parseFloat(t0);
+    const epochJD = parseFloat(epoch);
+
+    const dt = (timeOfCloseApproach - t0JD) / 36525;
+
+    const meanAnomalyCloseApproach = M0 + toRadians(n) * dt;
+
+    const trueAnomaly = calculateTrueAnomaly(meanAnomalyCloseApproach, e);
+
+    const r = a * (1 - e * Math.cos(trueAnomaly));
+    console.log('r: ', r)
+    const xOrb = r * Math.cos(trueAnomaly);
+    const yOrb = r * Math.sin(trueAnomaly);
+    console.log('xOrb: ', xOrb, 'yOrb: ', yOrb)
+
+    const x = xOrb * (Math.cos(ΩRad) * Math.cos(ωRad) - Math.sin(ΩRad) * Math.sin(ωRad) * Math.cos(iRad)) - yOrb * (Math.cos(ΩRad) * Math.sin(ωRad) + Math.sin(ΩRad) * Math.cos(ωRad) * Math.cos(iRad));
+    const y = xOrb * (Math.sin(ΩRad) * Math.cos(ωRad) + Math.cos(ΩRad) * Math.sin(ωRad) * Math.cos(iRad)) + yOrb * (Math.sin(ΩRad) * Math.sin(ωRad) - Math.cos(ΩRad) * Math.cos(ωRad) * Math.cos(iRad));
+    const z = xOrb * (Math.sin(ωRad) * Math.sin(iRad)) + yOrb * (Math.cos(ωRad) * Math.sin(iRad));
+    console.log('x: ', x, 'y: ', y, 'z: ', z)
+    const latitude = toDegrees(Math.atan2(z, Math.sqrt(x * x + y * y)));
+    const longitude = toDegrees(Math.atan2(y, x));
+    console.log('latitude: ', latitude, 'longitude: ', longitude)
+
+    return { latitude, longitude };
+}
+
+async function getOrbitalElementsFromNeo4j(asteroidId) {
+    const session = neo4jDriver.session({ database: 'asteroids' });
+    try {
+        const result = await session.run(
+            'MATCH (n:Asteroid)-[r:HAS_ORBITAL_DATA]->(od:OrbitalData) WHERE n.id = $id RETURN od',
+            { id: asteroidId }
+        );
+
+        if (result.records.length === 0) {
+            throw new Error("Orbital data not found");
+        }
+
+        return result.records[0].get('od').properties;
+    } finally {
+        await session.close();
+    }
 }
 
 async function getCloseApproachData(asteroidId) {
-    console.log('Fetching close approach data for asteroid:', asteroidId);
     const session = neo4jDriver.session({ database: 'asteroids' });
     try {
         const result = await session.run(
@@ -50,24 +100,19 @@ async function getCloseApproachData(asteroidId) {
 
 async function getVisibleCountriesAndPositions(asteroidId) {
     const closeApproachData = await getCloseApproachData(asteroidId);
-    console.log(closeApproachData);
+    const orbitalElements = await getOrbitalElementsFromNeo4j(asteroidId);
 
     const session = neo4jDriver.session({ database: 'neo4j' });
 
     try {
         const results = [];
+        const searchRadiusKm = 500; // Search radius in kilometers
 
         for (const approach of closeApproachData) {
-            // Placeholder initial coordinates and bearing for calculation
-            const initialLat = 0; // Replace with actual latitude
-            const initialLon = 0; // Replace with actual longitude
-            const bearing = 0; // Replace with actual bearing
+            const timeOfCloseApproach = parseFloat(approach.epoch_date_close_approach); // Julian date of close approach
+            const { latitude: approachLatitude, longitude: approachLongitude } = calculatePosition(orbitalElements, orbitalElements.epoch_osculation, timeOfCloseApproach);
 
-            const { latitude: approachLatitude, longitude: approachLongitude } = calculateLatLonFromMissDistance(
-                initialLat, initialLon, parseFloat(approach.miss_distance_kilometers), bearing
-            );
-
-            const searchRadiusKm = 500; // Search radius in kilometers
+            console.log('approachLatitude: ', approachLatitude, 'approachLongitude: ', approachLongitude)
             const searchRadiusDegrees = searchRadiusKm / 111; // Convert km to approximate degrees
 
             const result = await session.run(
@@ -88,12 +133,15 @@ async function getVisibleCountriesAndPositions(asteroidId) {
                 { approachLatitude, approachLongitude, searchRadiusDegrees, searchRadiusKm }
             );
 
-            const visibleCountries = result.records.map(record => record.get('country'));
+            const visibleCountries = result.records
+                .map(record => record.get('country'))
+                .filter(country => country !== null);
 
             results.push({
                 closeApproachDate: approach.close_approach_date,
                 position: { latitude: approachLatitude, longitude: approachLongitude },
-                visibleCountries
+                visibleCountries,
+                searchRadiusKm
             });
         }
 

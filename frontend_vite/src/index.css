@@ -70,3 +70,10 @@ body {
   border-radius: 3px;
   pointer-events: none;
 }
+.country-label {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: black;
+  /* font-weight: bold; */
+}

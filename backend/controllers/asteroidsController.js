@@ -78,8 +78,8 @@ exports.getAsteroidDetails = async (req, res) => {
 exports.getAsteroidVisibility = async (req, res) => {
     try {
         // const asteroidId = req.params.id;
-        // const asteroidId = req.params.id;
-        const asteroidId = "2052387";
+        const asteroidId = req.params.id;
+        // const asteroidId = "2315020";
         console.log(asteroidId);
         const visibilityData = await getVisibleCountriesAndPositions(asteroidId);
         res.json({ visibilityData });
