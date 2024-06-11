@@ -79,9 +79,9 @@ const Astronaut = () => {
 
   const initializeMap = (satellites) => {
     mapRef.current = L.map('map').setView([observerLatitude, observerLongitude], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(mapRef.current);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors, © CartoDB'
+    }).addTo(mapRef.current); 
     updateMap(satellites);
   };
 
@@ -112,17 +112,15 @@ const Astronaut = () => {
           Astronaut:  ${observerName}<br>
           Latitude: ${observerLatitude}<br>
           Longitude: ${observerLongitude}<br>
-          Altitude: ${observerAltitude}<br>
+          Altitude: ${observerAltitude} km<br>
         `);
   
       // custom icon for the satellites markers
       const customIcon = L.icon({
-        iconUrl: 'blue_marker.png',
+        iconUrl: 'blue_satellite.png',
         shadowUrl: markerShadow,
         iconSize: [40, 40],
         shadowSize: [50, 50], 
-        iconAnchor: [12, 41],
-        shadowAnchor: [12, 41], 
         popupAnchor: [0, -41] 
       });
   
@@ -135,8 +133,8 @@ const Astronaut = () => {
               Satellite: ${satellite.satname}<br>
               Latitude: ${satellite.satlat}<br>
               Longitude: ${satellite.satlng}<br>
-              Altitude: ${satellite.satalt}<br>
-              Distance: ${satellite.distance}
+              Altitude: ${satellite.satalt} km<br>
+              Distance: ${satellite.distance} km
             `);
         }
       });
@@ -145,12 +143,10 @@ const Astronaut = () => {
       if (satellites.length > 0) {
         const closestSatellite = satellites[0];
         const closestSatelliteIcon = L.icon({
-          iconUrl: 'satellite_close.png',
+          iconUrl: 'green_satellite.png',
           iconSize: [40, 40], 
-          iconAnchor: [12, 41], 
           shadowUrl: markerShadow,
           shadowSize: [50, 50], 
-          shadowAnchor: [12, 41],
           popupAnchor: [0, -41]
         });
         L.marker([closestSatellite.satlat, closestSatellite.satlng], { icon: closestSatelliteIcon })
@@ -159,8 +155,8 @@ const Astronaut = () => {
             Closest Satellite: ${closestSatellite.satname} <br>
             Latitude: ${closestSatellite.satlat}<br>
             Longitude: ${closestSatellite.satlng}<br>
-            Altitude: ${closestSatellite.satalt}<br>
-            Distance: ${closestSatellite.distance}
+            Altitude: ${closestSatellite.satalt} km<br>
+            Distance: ${closestSatellite.distance} km
           `);
   
         L.polyline([
@@ -195,7 +191,7 @@ const Astronaut = () => {
             {`
               Longitude: ${observerLongitude}, 
               Latitude: ${observerLatitude}, 
-              Altitude: ${observerAltitude}
+              Altitude: ${observerAltitude} km
             `}
           </h3>
         )}
