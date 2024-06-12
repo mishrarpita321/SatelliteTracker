@@ -49,7 +49,7 @@ exports.fetchSatelliteTle = async (req, res) => {
 let satelliteData = [];
 exports.fetchSatelliteData = async () => {
     try {
-        const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+        const client = new MongoClient(process.env.MONGODB_URI, {});
         await client.connect();
         const db = client.db('satellites');
         const groups = ['intelsat', 'iridium', 'starlink', 'other-comm'];
