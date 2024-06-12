@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const AstronautSatelliteSchema = new mongoose.Schema({
+  astronautId: { type: mongoose.Schema.Types.ObjectId, ref: 'Astronaut' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   category: String,
   satid: Number,
   satname: String,

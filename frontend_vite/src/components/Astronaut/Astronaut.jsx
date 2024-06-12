@@ -6,9 +6,10 @@ import { ClipLoader } from 'react-spinners';
 
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-const Astronaut = () => {
+const Astronaut = ({ userId }) => {
   const [astronauts, setAstronauts] = useState([]);
   const [selectedAstronaut, setSelectedAstronaut] = useState('');
+  const [selectedAstronautId, setSelectedAstronautId] = useState('');
   const [observerName, setObserverName] = useState('');
   const [observerLatitude, setObserverLatitude] = useState('');
   const [observerLongitude, setObserverLongitude] = useState('');
@@ -36,6 +37,7 @@ const Astronaut = () => {
     const selectedAstronautData = astronauts.find(astronaut => astronaut.astronautName === selectedAstronaut);
     if (selectedAstronautData) {
       setSelectedAstronaut(selectedAstronaut);
+      setSelectedAstronautId(selectedAstronautData._id);
       setObserverName(selectedAstronautData.astronautName);
       setObserverLongitude(selectedAstronautData.longitude);
       setObserverLatitude(selectedAstronautData.latitude);
@@ -48,6 +50,8 @@ const Astronaut = () => {
     setLoading(true); // Start loading
     try {
       const response = await axios.post('http://localhost:5000/astronautRoutes/satellite', {
+        astronautId: selectedAstronautId,
+        userId: userId,
         astronautName: observerName,
         latitude: observerLatitude,
         longitude: observerLongitude,

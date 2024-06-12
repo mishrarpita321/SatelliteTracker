@@ -13,6 +13,7 @@ const Login = ({ setAuthenticated }) => {
         try {
             const response = await axios.post('http://localhost:5000/astronautRoutes/login', { username, password });
             localStorage.setItem('token', response.data.token);
+            localStorage.setItem('userId', response.data.userId);
             setAuthenticated(true);
             navigate('/');
         } catch (err) {

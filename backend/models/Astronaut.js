@@ -4,7 +4,7 @@ const AstronautSchema = new mongoose.Schema({
   astronautName: String,
   longitude: Number,
   latitude: Number,
-  altitude: String
+  altitude: Number
 });
 
 const Astronaut = mongoose.model('Astronaut', AstronautSchema);

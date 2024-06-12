@@ -17,11 +17,14 @@ function App() {
 
   const [authenticated, setAuthenticated] = useState(false);
 
+  const userId = localStorage.getItem('userId'); 
+  
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     setAuthenticated(false);
   };
-
+  
   return (
     <WebSocketProvider>
       <BrowserRouter>
@@ -32,7 +35,7 @@ function App() {
             <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} />} />
             <Route path="/drift" element={authenticated ? <DriftVisualisation satName={selectedSatelliteName} /> : <Navigate to="/login" />} />
             <Route path="/" element={authenticated ? <Home /> : <Navigate to="/login" />} />
-            <Route path="/astronaut" element={authenticated ? <AstronautTracking /> : <Navigate to="/login" />} />
+            <Route path="/astronaut" element={authenticated ? <AstronautTracking userId={userId}/> : <Navigate to="/login" />} />
             <Route path="/login" element={<Login setAuthenticated={setAuthenticated} />} />
           </Routes>
         </div> 

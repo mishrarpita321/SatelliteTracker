@@ -23,7 +23,7 @@ router.get('/astronauts', async (req, res) => {
 // POST: Satellite
 router.post('/satellite', async (req, res) => {
   try {
-    const { latitude, longitude, altitude } = req.body;
+    const { astronautId, userId, latitude, longitude, altitude } = req.body;
     const API_KEY = process.env.N2YO_API_KEY;
     const observerLatitude = latitude;
     const observerLongitude = longitude;
@@ -37,6 +37,8 @@ router.post('/satellite', async (req, res) => {
 
     if (data && data.above) {
       const satellitesData = data.above.map(satellite => ({
+        astronautId: astronautId,
+        userId: userId,
         category: satellite.category,
         satid: satellite.satid,
         satname: satellite.satname,
@@ -108,7 +110,7 @@ router.post('/login', async (req, res) => {
 
       const token = jwt.sign({ userId: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
 
-      res.json({ token });
+      res.json({ token, userId: user._id });
   } catch (error) {
       res.status(500).json({ message: 'Server error' });
   }
