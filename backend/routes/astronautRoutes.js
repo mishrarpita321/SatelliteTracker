@@ -54,11 +54,11 @@ router.post('/satellite', async (req, res) => {
       // Sort satellites by distance
       satellitesData.sort((a, b) => a.distance - b.distance);
 
+      const closestSatellites = satellitesData.slice(0, 10);
+
       await AstronautSatellite.deleteMany();
 
-      await AstronautSatellite.insertMany(satellitesData);
-
-      const closestSatellites = satellitesData.slice(0, 10);
+      await AstronautSatellite.insertMany(closestSatellites);
       
       res.status(200).json(closestSatellites);
     } else {

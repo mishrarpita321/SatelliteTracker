@@ -140,30 +140,28 @@ const Astronaut = () => {
       });
   
       // marker for the closest satellite to the observer
-      if (satellites.length > 0) {
-        const closestSatellite = satellites[0];
-        const closestSatelliteIcon = L.icon({
-          iconUrl: 'green_satellite.png',
-          iconSize: [40, 40], 
-          shadowUrl: markerShadow,
-          shadowSize: [50, 50], 
-          popupAnchor: [0, -41]
-        });
-        L.marker([closestSatellite.satlat, closestSatellite.satlng], { icon: closestSatelliteIcon })
-          .addTo(mapRef.current)
-          .bindPopup(`
-            Closest Satellite: ${closestSatellite.satname} <br>
-            Latitude: ${closestSatellite.satlat}<br>
-            Longitude: ${closestSatellite.satlng}<br>
-            Altitude: ${closestSatellite.satalt} km<br>
-            Distance: ${closestSatellite.distance} km
-          `);
-  
-        L.polyline([
-          [observerLatitude, observerLongitude],
-          [closestSatellite.satlat, closestSatellite.satlng]
-        ], { color: 'green', weight: 10 }).addTo(mapRef.current);
-      }
+      const closestSatellite = satellites[0];
+      const closestSatelliteIcon = L.icon({
+        iconUrl: 'green_satellite.png',
+        iconSize: [40, 40], 
+        shadowUrl: markerShadow,
+        shadowSize: [50, 50], 
+        popupAnchor: [0, -41]
+      });
+      L.marker([closestSatellite.satlat, closestSatellite.satlng], { icon: closestSatelliteIcon })
+        .addTo(mapRef.current)
+        .bindPopup(`
+          Closest Satellite: ${closestSatellite.satname} <br>
+          Latitude: ${closestSatellite.satlat}<br>
+          Longitude: ${closestSatellite.satlng}<br>
+          Altitude: ${closestSatellite.satalt} km<br>
+          Distance: ${closestSatellite.distance} km
+        `);
+
+      L.polyline([
+        [observerLatitude, observerLongitude],
+        [closestSatellite.satlat, closestSatellite.satlng]
+      ], { color: 'green', weight: 10 }).addTo(mapRef.current);
     }
   };
   
