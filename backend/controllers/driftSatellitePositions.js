@@ -66,11 +66,12 @@ exports.fetchSatelliteData = async () => {
 
 // Calculate satellite positions from the stored data
 exports.calculateSatellitePositions = async (group) => {
-
+    
     const currentDate = new Date();
     // currentDate.setMilliseconds(currentDate.getMilliseconds() * 10000);
-
+    
     // console.log(currentDate);
+    // console.log(satelliteData);
 
     return (satelliteData[group] && satelliteData[group].map(data => {
         const { satellite: satname, line1, line2 } = data;
@@ -115,195 +116,6 @@ function determineOrbitType(altitude) {
         return "Geostationary Orbit";
     }
 }
-
-// Calculate orbit path for a satellite
-exports.calculateOrbitPath = async (line1, line2, satrec) => {
-    const currentDate = new Date();
-    const gmst = satellite.gstime(currentDate);
-    const positions = [];
-
-    for (let i = 0; i < 1440; i += 10) { // Calculate positions every 10 minutes for one day
-        const futureDate = new Date(currentDate.getTime() + i * 60000);
-        const positionAndVelocity = satellite.propagate(satrec, futureDate);
-        const positionEci = positionAndVelocity.position;
-
-        if (!positionEci) continue;
-
-        const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-        const latitudeDeg = satellite.degreesLat(positionGd.latitude);
-        const longitudeDeg = satellite.degreesLong(positionGd.longitude);
-        const altitude = positionGd.height * 1000; // Convert km to meters
-
-        positions.push({
-            longitude: longitudeDeg,
-            latitude: latitudeDeg,
-            altitude: altitude
-        });
-    }
-
-    return positions;
-}
-
-async function saveDataInMongo(satelliteLocations) {
-    try {
-        for (const satelliteLocation of satelliteLocations) {
-            const { noradCatId, satellite, line1, line2 } = satelliteLocation;
-            const existingData = await Satellite.findOne({ noradCatId });
-
-            if (existingData) {
-                const { satellite: existingSatellite, line1: existingLine1, line2: existingLine2 } = existingData;
-
-                if (satellite !== existingSatellite || line1 !== existingLine1 || line2 !== existingLine2) {
-                    existingData.satellite = satellite;
-                    existingData.line1 = line1;
-                    existingData.line2 = line2;
-                    await existingData.save();
-                    console.log(`Data updated for satellite ${noradCatId}`);
-                } else {
-                    console.log(`Data already up to date for satellite ${noradCatId}`);
-                }
-            } else {
-                const record = new Satellite(satelliteLocation);
-                await record.save();
-                console.log(`New record inserted for satellite ${noradCatId}`);
-            }
-        }
-    } catch (error) {
-        console.error('Error:', error.message);
-        throw new Error('Failed to save location record.');
-    }
-}
-
-exports.fetchSatellitePositionById = async (noradCatId) => {
-    const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${noradCatId}&FORMAT=tle`;
-
-    try {
-        const response = await axios.get(url);
-
-        if (response.status === 200) {
-            const data = response.data.trim();
-            const tleLines = data.split('\n');
-
-            if (tleLines.length === 3) {
-                const tle0 = tleLines[0].replace('\r', '').trim();
-                const tle1 = tleLines[1].replace('\r', '').trim();
-                const tle2 = tleLines[2].replace('\r', '').trim();
-
-                const satrec = satellite.twoline2satrec(tle1, tle2);
-                const currentDate = new Date();
-                const positionAndVelocity = satellite.propagate(satrec, currentDate);
-                const positionEci = positionAndVelocity.position;
-
-                if (!positionEci) {
-                    throw new Error('No position data available for the satellite');
-                }
-
-                const gmst = satellite.gstime(currentDate);
-                const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-
-                const latitudeDeg = satellite.degreesLat(positionGd.latitude);
-                const longitudeDeg = satellite.degreesLong(positionGd.longitude);
-                const altitude = positionGd.height;
-
-                return {
-                    satellite: tle0,
-                    latitude: latitudeDeg,
-                    longitude: longitudeDeg,
-                    altitude: altitude,
-                };
-            } else {
-                throw new Error('Invalid TLE data received');
-            }
-        } else {
-            throw new Error(`Request failed with status code ${response.status}`);
-        }
-    } catch (error) {
-        console.error('Error fetching satellite data:', error.message);
-        throw error;
-    }
-}
-
-exports.fetchSatelliteDataById = async (noradCatId) => {
-    try {
-        const satelliteData = await Satellite.findOne({ noradCatId });
-        if (!satelliteData) {
-            throw new Error('No data found for the satellite');
-        }
-
-        return satelliteData;
-    } catch (error) {
-        console.error('Error fetching satellite data:', error.message);
-        throw error;
-    }
-}
-
-// create a function that catches the satellite name in the URL and returns the satellite position data
-exports.predictSatellitePositionByName = async (req, res) => {
-    const { satellites } = req.body;
-    try {
-        let satelliteData;
-        if (Array.isArray(satellites) && satellites.length > 1) {
-            satelliteData = await Satellite.find({ satellite: { $in: satellites } });
-        } else {
-            satelliteData = await Satellite.findOne({ satellite: satellites[0] });
-        }
-
-        const satellitePositions = [];
-
-        if (!satelliteData || (Array.isArray(satelliteData) && satelliteData.length === 0)) {
-            return res.status(404).json({ message: "No data found for the satellite(s)" });
-        }
-
-        const currentDate = new Date();
-
-        const processSatelliteData = (data) => {
-            const tle0 = data.satellite;
-            const tle1 = data.line1;
-            const tle2 = data.line2;
-
-            const satrec = satellite.twoline2satrec(tle1, tle2);
-            const positionAndVelocity = satellite.propagate(satrec, currentDate);
-            const positionEci = positionAndVelocity.position;
-
-            if (!positionEci) {
-                return null;
-            }
-
-            const gmst = satellite.gstime(currentDate);
-            const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-
-            const latitudeDeg = satellite.degreesLat(positionGd.latitude);
-            const longitudeDeg = satellite.degreesLong(positionGd.longitude);
-            const altitude = positionGd.height;
-
-            return {
-                satellite: tle0,
-                latitude: latitudeDeg,
-                longitude: longitudeDeg,
-                altitude: altitude,
-            };
-        };
-
-        if (Array.isArray(satelliteData)) {
-            for (const data of satelliteData) {
-                const position = processSatelliteData(data);
-                if (position) satellitePositions.push(position);
-            }
-        } else {
-            const position = processSatelliteData(satelliteData);
-            if (position) satellitePositions.push(position);
-        }
-
-        res.json({ satellitePositions });
-    } catch (error) {
-        console.error('Error predicting satellite position:', error.message);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
-// create a function that fetches tle from celestrack api : https://celestrak.org/NORAD/elements/gp.php?GROUP=intelsat&FORMAT=tle
-// store the satellite name, line1 and line2 in the mongo database
-// name the collection as 'intelsat' and the database as 'satellites' same db
 
 exports.fetchAndStoreGroupSatelliteData = async (group) => {
     // const { group } = req.params;
@@ -383,61 +195,6 @@ const saveGroupDataInMongo = async (satelliteLocations, group) => {
     }
 }
 
-exports.predictSatelliteGroupPositions = async (req, res) => {
-    const { group } = req.body;
-    const mongo_url = process.env.MONGODB_URI;
-
-    try {
-        const client = new MongoClient(mongo_url);
-        await client.connect();
-        const db = client.db('satellites');
-        const collection = db.collection(group);
-
-        const satelliteData = await collection.find().toArray();
-
-        if (!satelliteData || satelliteData.length === 0) {
-            return res.status(404).json({ message: "No data found for the group" });
-        }
-
-        const currentDate = new Date();
-        const satellitePositions = satelliteData.map(data => {
-            const { satellite: satname, line1, line2 } = data;
-            const satrec = satellite.twoline2satrec(line1, line2);
-            const positionAndVelocity = satellite.propagate(satrec, currentDate);
-            const positionEci = positionAndVelocity.position;
-
-            if (!positionEci) {
-                return null;
-            }
-
-            const gmst = satellite.gstime(currentDate);
-            const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-
-            const latitudeDeg = satellite.degreesLat(positionGd.latitude);
-            const longitudeDeg = satellite.degreesLong(positionGd.longitude);
-            const altitude = positionGd.height;
-
-            const orbitType = determineOrbitType(altitude);
-
-            return {
-                satname: satname,
-                latitude: latitudeDeg,
-                longitude: longitudeDeg,
-                altitude: altitude,
-                orbitType: orbitType,
-            };
-        }).filter(position => position !== null);
-
-        res.json({ satellitePositions });
-    } catch (error) {
-        console.error('Error predicting satellite positions:', error.message);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
-
-//for drift UI
-
 async function getSatelliteOrbitalParameters (satName) { // Assuming satellite name is passed as a URL parameter
 
     try {
@@ -479,19 +236,13 @@ async function getSatelliteOrbitalParameters (satName) { // Assuming satellite n
 
         const latitudeDeg = satellite.degreesLat(positionGd.latitude);
         const longitudeDeg = satellite.degreesLong(positionGd.longitude);
-        const altitude = positionGd.height * 1000; // convert km to meters
+        const altitude = positionGd.height; 
 
         // Close the client connection
         client.close();
 
         // Return satellite data
         return {
-            // name: satName,
-            // noradCatId: noradCatId,
-            // epoch: epochDate,
-            // meanMotion: meanMotion,
-            // eccentricity: eccentricity,
-            // inclination: inclination,
             latitude: latitudeDeg,
             longitude: longitudeDeg,
             altitude: altitude
@@ -561,3 +312,120 @@ exports.getPost = async (req, res) => {
     }
 }
 
+exports.driftDetectionFn = async (satelliteData) => {
+    const session = neo4jDriver.session({ database: 'satellites' });
+
+    // Define drift detection thresholds
+    const thresholds = {
+        mean_motion: 0.05,
+        eccentricity: 0.001,
+        inclination: 0.1
+    };
+    // Construct the drift detection and epoch check part of the query
+    const driftCheckQuery = `
+    OPTIONAL MATCH (s:Satellite {norad_id: $norad_id})-[:OBSERVED]->(last)
+    WITH s, last
+    ORDER BY last.epoch DESC
+    LIMIT 1
+    RETURN last,
+    s IS NULL AS firstInsertion,
+    last IS NULL OR last.epoch <> $epoch AS epochUpdated,
+    {
+        mean_motion: abs(last.mean_motion - $mean_motion) > $mean_motion_threshold,
+        eccentricity: abs(last.eccentricity - $eccentricity) > $eccentricity_threshold,
+            inclination: abs(last.inclination - $inclination) > $inclination_threshold
+        } AS driftDetails`;
+
+    try {
+        // Run the drift detection query
+        const checkResult = await session.run(driftCheckQuery, {
+            OBJECT_NAME: satelliteData.OBJECT_NAME,
+            norad_id: satelliteData.norad_id,
+            epoch: satelliteData.epoch,
+            mean_motion: satelliteData.mean_motion,
+            eccentricity: satelliteData.eccentricity,
+            inclination: satelliteData.inclination,
+            mean_motion_threshold: thresholds.mean_motion,
+            eccentricity_threshold: thresholds.eccentricity,
+            inclination_threshold: thresholds.inclination
+        });
+
+        const record = checkResult.records[0];
+        const firstInsertion = record.get('firstInsertion');
+        const driftDetails = record.get('driftDetails');
+        const driftDetected = detectDrift(driftDetails);
+
+        if (firstInsertion || driftDetected) {
+
+            if (driftDetected) {
+                const driftQuery = `
+                MATCH (last:Satellite { norad_id: $norad_id })
+                WITH last
+                ORDER BY last.epoch DESC
+                LIMIT 1
+                CREATE (orb:ORBITAL_DETAILS {
+                    epoch: $epoch,
+                    mean_motion: $mean_motion,
+                    eccentricity: $eccentricity,
+                    inclination: $inclination,
+                    driftDetails: $driftDetails
+                })
+                CREATE (last)-[:OBSERVED]->(orb)
+                `;
+
+                await session.run(driftQuery, {
+                    OBJECT_NAME: satelliteData.OBJECT_NAME,
+                    norad_id: satelliteData.norad_id,
+                    epoch: satelliteData.epoch,
+                    mean_motion: satelliteData.mean_motion,
+                    eccentricity: satelliteData.eccentricity,
+                    inclination: satelliteData.inclination,
+                    driftDetails: JSON.stringify(driftDetails)
+                });
+                console.log(`Drift detected for ${satelliteData.OBJECT_NAME}`);
+                return `Drift detected for ${satelliteData.OBJECT_NAME}`;
+            } else if (firstInsertion) {
+                // Create/update the node and relationships if it's the first data point or drift is detected
+                const query = `
+                CREATE (current:Satellite {
+                    OBJECT_NAME: $OBJECT_NAME,
+                    norad_id: $norad_id
+                })
+                CREATE (orb:ORBITAL_DETAILS {
+                    epoch: $epoch,
+                    mean_motion: $mean_motion,
+                    eccentricity: $eccentricity,
+                    inclination: $inclination
+                })
+                CREATE (current)-[:OBSERVED]->(orb)
+                RETURN current
+                `;
+
+                const result = await session.run(query, satelliteData);
+                // const currentData = result.records[0].get('current').properties;
+                logger.error('First data point stored.');
+            } else {
+                // logger.info('No significant drift detected');
+                console.log('No significant drift detected');
+                return 'No significant drift detected';
+            }
+        } else {
+            console.log('No new node created as there is no significant drift or epoch update');
+            return 'No drift detected';
+            // logger.info('No new node created as there is no significant drift or epoch update');
+        }
+    } catch (error) {
+        logger.error('Error saving to Neo4j:', error);
+    } finally {
+        await session.close();
+    }
+};
+
+function detectDrift(driftDetails) {
+    for (const key in driftDetails) {
+        if (driftDetails[key]) {
+            return true;
+        }
+    }
+    return false;
+}

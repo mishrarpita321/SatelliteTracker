@@ -3,11 +3,9 @@ const {
   fetchAndStoreSatelliteData,
   saveToNeo4j
 } = require('../controllers/driftController');
-const { fetchSatelliteTle, predictAllSatellitePosition, fetchSatelliteDataById, fetchSatellitePositionById, 
-  predictSatellitePositionByName, fetchAndStoreGroupSatelliteData, predictSatelliteGroupPositions, 
-  getSatelliteOrbitalParameters,
-  getPost} = require('../controllers/driftSatellitePositions');
-const axios = require('axios');
+const { fetchSatelliteTle,  fetchAndStoreGroupSatelliteData, 
+  getPost,
+  driftDetectionFn} = require('../controllers/driftSatellitePositions');
 const router = express.Router();
 
 
@@ -29,31 +27,31 @@ router.get('/satellitePositions', fetchSatelliteTle);
 
 // router.get('/predict-satellite-positions', predictAllSatellitePosition);
 
-router.get('/satellite/:id', async (req, res) => {
-  const noradCatId = req.params.id;
+// router.get('/satellite/:id', async (req, res) => {
+//   const noradCatId = req.params.id;
 
-  try {
-    const satelliteData = await fetchSatellitePositionById(noradCatId);
-    res.json(satelliteData);
-  } catch (error) {
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-
-router.get('/satelliteData/:id', async (req, res) => {
-  const noradCatId = req.params.id;
-
-  try {
-    const satelliteData = await fetchSatelliteDataById(noradCatId);
-    res.json(satelliteData);
-  } catch (error) {
-    res.status(500).send('Internal Server Error');
-  }
-});
+//   try {
+//     const satelliteData = await fetchSatellitePositionById(noradCatId);
+//     res.json(satelliteData);
+//   } catch (error) {
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 
-router.post('/getSatellitePosition', predictSatellitePositionByName);
+// router.get('/satelliteData/:id', async (req, res) => {
+//   const noradCatId = req.params.id;
+
+//   try {
+//     const satelliteData = await fetchSatelliteDataById(noradCatId);
+//     res.json(satelliteData);
+//   } catch (error) {
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
+
+// router.post('/getSatellitePosition', predictSatellitePositionByName);
 
 // router.get('/fetch/:group', fetchAndStoreGroupSatelliteData);
 const groups = ['intelsat', 'iridium', 'starlink', 'other-comm'];
@@ -69,14 +67,14 @@ router.get('/fetch/all', async (req, res) => {
     }
 });
 
-router.post('/predict-groupsatellite-positions', predictSatelliteGroupPositions);
+// router.post('/predict-groupsatellite-positions', predictSatelliteGroupPositions);
 
 router.get('/satelliteDriftPos', getPost);
 
 router.post('/check-drift', async (req, res) => {
   console.log('req.body:', req.body);
   try {
-      const message = await saveToNeo4j(req.body);
+      const message = await driftDetectionFn(req.body);
       res.status(200).send({ message });
   } catch (error) {
       res.status(500).send({ error: 'Internal Server Error' });

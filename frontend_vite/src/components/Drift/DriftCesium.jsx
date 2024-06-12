@@ -1,22 +1,17 @@
 import { Viewer, Entity, BillboardGraphics } from "resium";
 import { Cartesian3, Color } from 'cesium';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useWebSocket } from '../../context/WebSocketContext';
 
 const DriftCesium = ({ satName, setSatPositions , satPositions}) => {
-    const { longitude, latitude, altitude } = satPositions;
-    // const position = Cartesian3.fromDegrees(longitude, latitude, altitude);
-    const position = (longitude && latitude && altitude) ? Cartesian3.fromDegrees(longitude, latitude, altitude) : null;
-    const pointGraphics = { pixelSize: 10, color: Color.RED };
     const { sendMessage, addMessageHandler } = useWebSocket();
-
-    // console.log('satName:', satPositions);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const handleSatelliteGroupMsg = (data) => {
             if (data.type === 'selectedSatPosition' && data.satName === satName) {
                 setSatPositions(data.position);
-                console.log(satPositions);
+                setIsLoading(false);
             }
         };
 
@@ -38,7 +33,15 @@ const DriftCesium = ({ satName, setSatPositions , satPositions}) => {
                 satName: satName
             }).catch(err => console.error('Failed to send stop message', err));
         };
-    }, [satName]);
+    }, [satName, satPositions]);
+
+    if (isLoading) {
+        return <h2>Loading...</h2>;
+    }
+
+    const { longitude, latitude, altitude } = satPositions;
+    const position = (longitude && latitude && altitude) ? Cartesian3.fromDegrees(longitude, latitude, altitude) : null;
+    const pointGraphics = { pixelSize: 200, color: Color.RED };
 
     return (
         <Viewer

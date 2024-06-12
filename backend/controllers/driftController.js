@@ -147,7 +147,6 @@ exports.saveToNeo4j = async (satelliteData) => {
     }
 }
 
-
 exports.getLatestOrbitalDetails = async (req, res) => {
     const { OBJECT_NAME } = req.params;
     const session = driver.session();
