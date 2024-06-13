@@ -8,7 +8,11 @@ const cors = require('cors');
 const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
 const { setupWebSocketServer } = require('./middleware/webSocketMiddleware');
 const { sendTestNotification } = require('./controllers/notificationController');
+
+const astronautRoutes = require('./routes/astronautRoutes');
 const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
+
+
 app.use(cors());
 const PORT = process.env.PORT || 3000;
 
@@ -16,6 +20,8 @@ app.use(express.json());
 app.use('/api/drift', driftRoutes);
 app.use(express.static('public'));
 app.post('/api/sendNotification', sendTestNotification);
+app.use('/astronautRoutes', astronautRoutes);
+
 
 
 const server = http.createServer(app);
