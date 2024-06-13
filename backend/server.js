@@ -1,83 +1,46 @@
 require('dotenv').config();
-const express = require('express');
 const http = require('http');
+const cors = require('cors');
+const express = require('express');
 const { connectDB } = require('./config/db');
 const driftRoutes = require('./routes/driftRoutes');
-const app = express();
-const cors = require('cors');
-const { fetchSatelliteData, calculateSatellitePositions } = require('./controllers/driftSatellitePositions');
+const asteroidRoutes = require('./routes/asteroidRoutes');
 const { setupWebSocketServer } = require('./middleware/webSocketMiddleware');
 const { sendTestNotification } = require('./controllers/notificationController');
-app.use(cors());
+const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
+const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
+const astronautRoutes = require('./routes/astronautRoutes');
+
 const PORT = process.env.PORT || 3000;
-// Middleware
+
+const app = express();
+app.use(cors());
+
+
 app.use(express.json());
-app.use('/api/drift', driftRoutes);
 app.use(express.static('public'));
+
+// Middleware
+app.use('/api/drift', driftRoutes);
+app.use('/api/asteroids',asteroidRoutes);
 app.post('/api/sendNotification', sendTestNotification);
+app.use('/astronautRoutes', astronautRoutes);
 
-// Create an HTTP server from the Express app
 const server = http.createServer(app);
-// const wss = new WebSocket.Server({ port: 3002 });
 
-// Start the server
+// start Socket
+setupWebSocketServer(server);
+
 server.listen(PORT, async () => {
-    await fetchSatelliteData();
+    // await fetchSatelliteData();
     console.log(`Server running on port ${PORT}`);
 });
-
-setupWebSocketServer(server);
 
 const startServer = async () => {
     await connectDB();
     await fetchSatelliteData();
-
+    // setInterval(fetchAndStoreSatelliteData, 12 * 60 * 60 * 1000);
+    // setInterval(fetchSatelliteData, 60 * 60 * 1000);
 };
 
 startServer();
-
-// wss.on('connection', (ws) => {
-//     console.log('Client connected..');
-//     let interval;
-
-//     ws.on('message', async (message) => {
-//         try {
-//             // Parse the message
-//             const { group } = JSON.parse(message);
-
-//             // Define a function to send satellite positions
-//             const sendSatellitePositions = async () => {
-//                 const satellitePositions = await calculateSatellitePositions(group);
-//                 ws.send(JSON.stringify({ satellitePositions }));
-//             };
-
-//             // Clear the previous interval
-//             if (interval) {
-//                 clearInterval(interval);
-//             }
-
-//             // Send positions immediately
-//             await sendSatellitePositions();
-
-//             // Set up interval to send positions periodically
-//             interval = setInterval(async () => {
-//                 await sendSatellitePositions();
-//             }, 1000);
-
-//             // Clear interval on client disconnect
-//             ws.on('close', () => {
-//                 clearInterval(interval);
-//             });
-
-//             // Handle any potential errors
-//             ws.on('error', (error) => {
-//                 console.error('WebSocket error:', error);
-//                 clearInterval(interval);
-//             });
-//         } catch (error) {
-//             console.error('Error processing message:', error);
-//             ws.send(JSON.stringify({ error: 'Invalid message format' }));
-//         }
-//     });
-// });
-

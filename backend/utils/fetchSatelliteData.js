@@ -1,4 +1,3 @@
-// src/utils/fetchTleData.js
 const axios = require('axios');
 
 const fetchSatelliteData = async () => {
