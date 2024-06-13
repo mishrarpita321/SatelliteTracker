@@ -304,7 +304,7 @@ const AsteroidOrbit = () => {
 
     return (
         <div>
-            <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1, color: 'white' }}>
+            <div style={{ position: 'absolute', top: '90px', left: '10px', zIndex: 1, color: 'white' }}>
                 <label htmlFor="time-interval">Time Interval: </label>
                 <select id="time-interval" onChange={handleTimeIntervalChange}>
                     <option value="1day">1 Day</option>
