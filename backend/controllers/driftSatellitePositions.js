@@ -6,10 +6,15 @@ const neo4jDriver = require('../config/db').neo4jDriver;
 
 let satelliteData = [];
 exports.fetchSatelliteData = async () => {
+    console.log('Fetching satellite data...');
     try {
+
+        console.log('Fetching satellite data...1');  
+
+        
         const client = new MongoClient(process.env.MONGODB_URI);
         await client.connect();
-        const db = client.db('satellites');
+        const db = client.db(process.env.MONGODB_DB_NAME);
         const groups = ['intelsat', 'iridium', 'starlink', 'other-comm'];
         for (const group of groups) {
             const collection = db.collection(group);
@@ -120,7 +125,7 @@ const saveGroupDataInMongo = async (satelliteLocations, group) => {
     const client = new MongoClient(mongo_url);
     try {
         await client.connect();
-        const db = client.db('satellites');
+        const db = client.db(process.env.MONGODB_DB_NAME);
         const collection = db.collection(group);
         for (const satelliteLocation of satelliteLocations) {
             const { noradCatId, satellite, line1, line2 } = satelliteLocation;
@@ -153,7 +158,7 @@ async function getSatelliteOrbitalParameters (satName) {
     try {
         const client = new MongoClient(process.env.MONGODB_URI);
         await client.connect();
-        const db = client.db('satellites');
+        const db = client.db(process.env.MONGODB_DB_NAME);
         const collection = db.collection('starlink');
 
         const satelliteData = await collection.findOne({ satellite: satName });

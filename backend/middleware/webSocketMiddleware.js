@@ -1,5 +1,4 @@
 const WebSocket = require('ws');
-const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups } = require('./driftSatellitesMiddleware');
 const { subscribeToAsteroid, unsubscribeFromAsteroid, handleIntervalChange } = require('./asteroidMiddleware');
 const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups, subscribeToSatellitePosition, unsubscribeToSatellitePosition } = require('./driftSatellitesMiddleware');
 

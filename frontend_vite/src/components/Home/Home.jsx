@@ -6,41 +6,41 @@ const Home = () => {
 
   const handleAstronaut = () => {
     navigate('/astronaut');
+    // navigate('/astronaut', { replace: true });
   };
-
   const handleSatelliteDrift = () => {
-    navigate('/drift');
-  };
+    window.location.href = '/satellites';
 
+    // navigate('/satellites');
+    // navigate('/satellites',{replace: true});
+  };
+  const handleAsteroids = () => {
+    navigate('/asteroids');
+  };
   const handleSatelliteCollision = () => {
     navigate('/');
   };
-
-  const handleNearEarthObjects = () => {
-    navigate('/');
-  };
-
   const handleImageOverlay = () => {
     navigate('/');
   };
 
   return (
-    <div>
+    <div className="background-container-astronaut">
       <div className="custom-wrap">
         <h2 className="custom-title"> Data Miners</h2>
         <form className="custom-section">
           <div>
             <button type="button" onClick={handleAstronaut} className="custom-button">
-              <span>AstroComms</span>
+              <span>Astronaut Nearest Satellites - Sarah Khatib</span>
             </button>
             <button type="button" onClick={handleSatelliteDrift} className="custom-button">
-              <span>Satellite Drift</span>
+              <span>Satellite Drift - Arpita Mishra</span>
+            </button>
+            <button type="button" onClick={handleAsteroids} className="custom-button">
+              <span>Asteroids List - Roshan Devkota</span>
             </button>
             <button type="button" onClick={handleSatelliteCollision} className="custom-button">
               <span>Satellite Collision</span>
-            </button>
-            <button type="button" onClick={handleNearEarthObjects} className="custom-button">
-              <span>Near-Earth Objects</span>
             </button>
             <button type="button" onClick={handleImageOverlay} className="custom-button">
               <span>Image Overlay</span>

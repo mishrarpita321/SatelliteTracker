@@ -12,7 +12,10 @@ const router = express.Router();
 // GET: Fetch all astronauts
 router.get('/astronauts', async (req, res) => {
   try {
+    console.log('Fetching astronauts...');
     const astronauts = await Astronaut.find();
+
+    console.log('Astronauts:', astronauts);
     res.status(200).json(astronauts);
   } catch (error) {
     console.error('Error fetching astronauts:', error);
@@ -23,7 +26,7 @@ router.get('/astronauts', async (req, res) => {
 // POST: Satellite
 router.post('/satellite', async (req, res) => {
   try {
-    const { astronautId, userId, latitude, longitude, altitude } = req.body;
+    const { astronautId, latitude, longitude, altitude } = req.body;
     const API_KEY = process.env.N2YO_API_KEY;
     const observerLatitude = latitude;
     const observerLongitude = longitude;
@@ -38,7 +41,6 @@ router.post('/satellite', async (req, res) => {
     if (data && data.above) {
       const satellitesData = data.above.map(satellite => ({
         astronautId: astronautId,
-        userId: userId,
         category: satellite.category,
         satid: satellite.satid,
         satname: satellite.satname,
@@ -58,7 +60,7 @@ router.post('/satellite', async (req, res) => {
 
       const closestSatellites = satellitesData.slice(0, 10);
 
-      await AstronautSatellite.deleteMany();
+      //await AstronautSatellite.deleteMany();
 
       await AstronautSatellite.insertMany(closestSatellites);
       
@@ -93,27 +95,27 @@ function distance(lat1, lon1, alt1, lat2, lon2, alt2) {
   return distance3D;
 }
 
-// Login user
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+// // Login user
+// router.post('/login', async (req, res) => {
+//   const { username, password } = req.body;
 
-  try {
-      const user = await User.findOne({ username });
-      if (!user) {
-          return res.status(400).json({ message: 'Invalid credentials' });
-      }
+//   try {
+//       const user = await User.findOne({ username });
+//       if (!user) {
+//           return res.status(400).json({ message: 'Invalid credentials' });
+//       }
 
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-          return res.status(400).json({ message: 'Invalid credentials' });
-      }
+//       const isMatch = await bcrypt.compare(password, user.password);
+//       if (!isMatch) {
+//           return res.status(400).json({ message: 'Invalid credentials' });
+//       }
 
-      const token = jwt.sign({ userId: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+//       const token = jwt.sign({ userId: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
 
-      res.json({ token, userId: user._id });
-  } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-  }
-});
+//       res.json({ token, userId: user._id });
+//   } catch (error) {
+//       res.status(500).json({ message: 'Server error' });
+//   }
+// });
 
 module.exports = router;

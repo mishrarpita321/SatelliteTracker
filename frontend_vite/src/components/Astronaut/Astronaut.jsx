@@ -5,8 +5,9 @@ import 'leaflet/dist/leaflet.css';
 import { ClipLoader } from 'react-spinners';
 
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { API_ENDPOINTS } from '../../constants/apiConstants';
 
-const Astronaut = ({ userId }) => {
+const Astronaut = () => {
   const [astronauts, setAstronauts] = useState([]);
   const [selectedAstronaut, setSelectedAstronaut] = useState('');
   const [selectedAstronautId, setSelectedAstronautId] = useState('');
@@ -24,8 +25,9 @@ const Astronaut = ({ userId }) => {
   }, []);
 
   const fetchAstronauts = async () => {
+    console.log('Fetching astronauts...');
     try {
-      const response = await axios.get('http://localhost:5000/astronautRoutes/astronauts');
+      const response = await axios.get(`${API_ENDPOINTS.ASTRONAUT}`);
       setAstronauts(response.data);
     } catch (error) {
       console.error('Error fetching astronauts:', error);
@@ -49,9 +51,8 @@ const Astronaut = ({ userId }) => {
     e.preventDefault();
     setLoading(true); // Start loading
     try {
-      const response = await axios.post('http://localhost:5000/astronautRoutes/satellite', {
+      const response = await axios.post(`${API_ENDPOINTS.ASTRONAUT_SATELLITE}`, {
         astronautId: selectedAstronautId,
-        userId: userId,
         astronautName: observerName,
         latitude: observerLatitude,
         longitude: observerLongitude,
@@ -171,9 +172,9 @@ const Astronaut = ({ userId }) => {
   
 
   return (
-    <div>
+    <div className="background-container-astronaut">
       <form onSubmit={handleSubmit}>
-        <h3>
+        <h3 className="h3-astronaut">
           Select Astronaut:{' '}
           <select className="custom-select" value={selectedAstronaut} onChange={handleAstronautChange}>
             <option value="">
@@ -187,7 +188,7 @@ const Astronaut = ({ userId }) => {
           </select>
         </h3>
         {observerLongitude && observerLatitude && observerAltitude && (
-          <h3>
+          <h3 className="h3-astronaut">
             {' '}
             Astronaut Coordinates: 
             {`

@@ -4,19 +4,18 @@ const cors = require('cors');
 const express = require('express');
 const { connectDB } = require('./config/db');
 const driftRoutes = require('./routes/driftRoutes');
-
 const asteroidRoutes = require('./routes/asteroidRoutes');
 const { setupWebSocketServer } = require('./middleware/webSocketMiddleware');
 const { sendTestNotification } = require('./controllers/notificationController');
-const { fetchSatelliteData, calculateSatellitePositions } = require('./controllers/driftSatellitePositions');
+const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
+const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
+const astronautRoutes = require('./routes/astronautRoutes');
 
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(cors());
 
-const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
-const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
 
 app.use(express.json());
 app.use(express.static('public'));

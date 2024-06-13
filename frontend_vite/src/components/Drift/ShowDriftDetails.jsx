@@ -9,6 +9,7 @@ const ShowDrfitDetails = ({ satPositions, setSatPositions, satName }) => {
     useEffect(() => {
         const handleSatelliteGroupMsg = (data) => {
             if (data.type === 'selectedSatPosition' && data.satName === satName) {
+                console.log('Selected satellite position:', data);
                 setSatPositions(data.position);
             }
         };

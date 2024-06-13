@@ -1,35 +1,12 @@
-
-.background-container {
-  
+ 
+.background-container-astronaut {
     background-image: url('wallpaper.jpg');
     background-size: cover;
     background-position: center;
     height: 100vh;
-  }
+  } 
   
-  body {
-    font-size: 12px;
-    font-family: sans-serif;
-    background: #002037;
-  }
-  
-  h1 {
-    text-align: center;
-    margin: 20px 0 20px;
-    text-align: center;
-    font-size: 30px;
-    color: #9cf7ff;
-    font-family: 'Arial';
-  }
-  h2 {
-    text-align: center;
-    margin: 10px 0 10px;
-    text-align: center;
-    font-size: 20px;
-    color: #9cf7ff;
-    font-family: 'Arial';
-  }
-  h3 {
+  .h3-astronaut {
     text-align: center;
     margin: 10px 0 10px;
     text-align: center;
@@ -37,7 +14,7 @@
     color: #9cf7ff;
     font-family: 'Arial';
   }
-  
+   
   .login-wrap {
     margin: auto;
     position: absolute;

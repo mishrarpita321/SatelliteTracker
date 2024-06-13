@@ -58,6 +58,7 @@ function subscribeToSatellitePosition(ws, updateIntervals, selectedSatelliteSubs
         // console.log("inside updateIntervals");
         const intervalId = setInterval(async () => {
             const position = await fetchOrbitalDetailsFromNeo4j(satName);
+            console.log("position",position);
             const message = JSON.stringify({
                 type: 'selectedSatPosition',
                 satName: satName,

@@ -10,26 +10,15 @@ import SocketStatus from './components/Common/SocketStatus';
 
 import AsteroidListScreen from './components/Asteroid/AsteroidListScreen';
 import AsteroidOrbit from './components/Asteroid/AsteroidOrbit';
-import TestPage from './components/Asteroid/Leaf/Test';
-
 import Login from './components/Common/Login';
 import AstronautTracking from './components/Astronaut/Astronaut';
 
 import './App.css';
+import AsteroidVisibility from './components/Asteroid/Leaf/AsteroidVisibility';
 
 
 function App() {
   const [selectedSatelliteName, setSelectedSatelliteName] = useState('');
-
-  const [authenticated, setAuthenticated] = useState(false);
-
-  const userId = localStorage.getItem('userId'); 
-  
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    setAuthenticated(false);
-  };
   
   return (
     <WebSocketProvider>
@@ -37,16 +26,15 @@ function App() {
         <SocketStatus />
 
         <div className="App background-container">
-        <Navbar authenticated={authenticated} handleLogout={handleLogout}/>
+        <Navbar/>
           <Routes>
             <Route path="/asteroids" element={<AsteroidListScreen />} />
             <Route path="/asteroid/:asteroidId" element={<AsteroidOrbit/>} />
-            <Route path="/asteroid/details/:asteroidId" element={<TestPage/>} />
+            <Route path="/asteroid/details/:asteroidId" element={<AsteroidVisibility />} />
             <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} satName={selectedSatelliteName}/>} />
-            <Route path="/drift" element={authenticated ? <DriftVisualisation satName={selectedSatelliteName} /> : <Navigate to="/login" />} />
-            <Route path="/" element={authenticated ? <Home /> : <Navigate to="/login" />} />
-            <Route path="/astronaut" element={authenticated ? <AstronautTracking userId={userId}/> : <Navigate to="/login" />} />
-            <Route path="/login" element={<Login setAuthenticated={setAuthenticated} />} />
+            <Route path="/drift" element={<DriftVisualisation satName={selectedSatelliteName}/>}/>
+            <Route path="/" element={<Home /> }/>
+            <Route path="/astronaut" element={<AstronautTracking />} />
           </Routes>
         </div> 
 

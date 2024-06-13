@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Navbar.css'; 
 
-const Navbar = ({ authenticated, handleLogout }) => {
+const Navbar = () => {
     const icon = "satellite.png";
     
     return (
@@ -13,13 +13,7 @@ const Navbar = ({ authenticated, handleLogout }) => {
               <li className="profile-picture">
                 <img src={`/${icon}`} alt="Image" />
               </li>
-              {authenticated && (
-                <>
-                  <li><Link to="/" ><i className="fa fa-home " aria-hidden="true"></i></Link></li>
-                  <li><Link to="#" onClick={handleLogout}>Logout</Link></li>
-                </>
-              )}
-              {!authenticated && <li><Link to="/login">Login</Link></li>}
+              <li><Link to="/">Home</Link></li>
             </ul>
           </nav>
         </>
