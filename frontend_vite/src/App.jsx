@@ -32,13 +32,14 @@ function App() {
         <div className="App background-container">
         <Navbar authenticated={authenticated} handleLogout={handleLogout}/>
           <Routes>
-            <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} />} />
+            <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} satName={selectedSatelliteName}/>} />
             <Route path="/drift" element={authenticated ? <DriftVisualisation satName={selectedSatelliteName} /> : <Navigate to="/login" />} />
             <Route path="/" element={authenticated ? <Home /> : <Navigate to="/login" />} />
             <Route path="/astronaut" element={authenticated ? <AstronautTracking userId={userId}/> : <Navigate to="/login" />} />
             <Route path="/login" element={<Login setAuthenticated={setAuthenticated} />} />
           </Routes>
         </div> 
+
       </BrowserRouter>
     </WebSocketProvider>
   );

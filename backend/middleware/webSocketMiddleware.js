@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups } = require('./driftSatellitesMiddleware');
+const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups, subscribeToSatellitePosition, unsubscribeToSatellitePosition } = require('./driftSatellitesMiddleware');
 // const { getFakeAsteroidOrbitalPosition } = require('../utils/predictPosition');
 
 // Store all active connections for broad messaging
@@ -8,6 +8,7 @@ let connections = new Set();
 // Maps to manage subscribers and intervals for specific asteroid updates
 const subscribers = new Map();
 const satelliteGroupSubscribers = new Map();
+const selectedSatelliteSubscribers = new Map();
 const updateIntervals = new Map();
 
 function setupWebSocketServer(server) {
@@ -55,6 +56,14 @@ function setupWebSocketServer(server) {
                     satelliteGroupSubscribers.delete(group);
                 }
             });
+            selectedSatelliteSubscribers.forEach((subs, group) => {
+                subs.delete(ws);
+                if (subs.size === 0) {
+                    clearInterval(updateIntervals.get(group));
+                    updateIntervals.delete(group);
+                    selectedSatelliteSubscribers.delete(group);
+                }
+            });
         });
     });
 }
@@ -75,6 +84,14 @@ function handleClientMessage(ws, data) {
         case 'stopSatelliteGroupTracking':
             unsubscribeToSatelliteGroups(ws,updateIntervals, satelliteGroupSubscribers , data.group);
             console.log('Satellite group stop:', data.group);
+            break;
+        case 'requestSelectedSatellitePosition':
+            subscribeToSatellitePosition(ws,updateIntervals, selectedSatelliteSubscribers , data.satName);
+            console.log('Satellite group stop:', data.satName);
+            break;
+        case 'stopSelectedSatellitePosition':
+            unsubscribeToSatellitePosition(ws,updateIntervals, selectedSatelliteSubscribers , data.satName);
+            console.log('Satellite group stop:', data.satName);
             break;
         default:
             console.error('Unknown type or command from WebSocket client:', data.type);
