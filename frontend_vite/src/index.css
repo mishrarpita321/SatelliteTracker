@@ -60,19 +60,23 @@ body {
 }
 
 
-/* form */
 
-/* src/components/SatelliteForm.css */
-/* .form-container { */
-  /* max-width: 600px; */
-  /* margin-left: 100px; */
-  /* margin: 50px auto; */
-  /* padding: 20px;  */
-  /* border: 1px solid #ccc; */
-  /* border-radius: 10px; */
-  /* background-color: #lightgray; */
-  /* box-shadow: 0 2px 5px rgba(0,0,0,0.1); */
-/* } */
+
+.label {
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.country-label {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: black;
+  /* font-weight: bold; */
 
 .form-container {
   margin: 0 0 10px 10px;

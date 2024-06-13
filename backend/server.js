@@ -1,39 +1,41 @@
 require('dotenv').config();
-const express = require('express');
 const http = require('http');
+const cors = require('cors');
+const express = require('express');
 const { connectDB } = require('./config/db');
 const driftRoutes = require('./routes/driftRoutes');
-const app = express();
-const cors = require('cors');
-const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
+
+const asteroidRoutes = require('./routes/asteroidRoutes');
 const { setupWebSocketServer } = require('./middleware/webSocketMiddleware');
 const { sendTestNotification } = require('./controllers/notificationController');
+const { fetchSatelliteData, calculateSatellitePositions } = require('./controllers/driftSatellitePositions');
 
-const astronautRoutes = require('./routes/astronautRoutes');
-const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
-
-
-app.use(cors());
 const PORT = process.env.PORT || 3000;
 
+const app = express();
+app.use(cors());
+
+const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
+const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
+
 app.use(express.json());
-app.use('/api/drift', driftRoutes);
 app.use(express.static('public'));
+
+// Middleware
+app.use('/api/drift', driftRoutes);
+app.use('/api/asteroids',asteroidRoutes);
 app.post('/api/sendNotification', sendTestNotification);
 app.use('/astronautRoutes', astronautRoutes);
 
-
-
 const server = http.createServer(app);
-// const wss = new WebSocket.Server({ port: 3002 });
 
+// start Socket
+setupWebSocketServer(server);
 
 server.listen(PORT, async () => {
     // await fetchSatelliteData();
     console.log(`Server running on port ${PORT}`);
 });
-
-setupWebSocketServer(server);
 
 const startServer = async () => {
     await connectDB();
