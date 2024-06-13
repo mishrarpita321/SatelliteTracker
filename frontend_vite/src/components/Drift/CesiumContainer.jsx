@@ -1,10 +1,11 @@
-import { Viewer, Entity, PolylineGraphics, PathGraphics } from 'resium';
+import { Viewer, Entity, BillboardGraphics, PathGraphics } from 'resium';
 import { Cartesian3, Color, IonImageryProvider, Ion } from 'cesium';
 import { useEffect, useState, useRef } from 'react';
 import { useWebSocket } from '../../context/WebSocketContext';
 
-const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSatelliteName }) => {
-    const [satPositions, setSatPositions] = useState([]);
+import satelliteImage from '../../assets/satellite.png'; // Import the satellite image
+
+const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSatelliteName, setSatPositions, satPositions }) => {
     const { sendMessage, addMessageHandler } = useWebSocket();
     
     const wsRef = useRef(null);
@@ -21,7 +22,7 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
     const color = groupColors[selectedGroup] || Color.ORANGE;
 
     const pointGraphics = {
-        pixelSize: 10,
+        pixelSize: 12,
         color: color,
     };
 
@@ -29,7 +30,6 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
         const handleSatelliteGroupMsg = (data) => {
             if (data.type === 'groupPosition' && data.group === selectedGroup) {
                 setSatPositions(data.position);
-                console.log('Received satellite positions:', data);
             }
         };
 
@@ -54,7 +54,6 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
     }, [selectedGroup]);
 
     const handleClick = (satname) => () => {
-        console.log('Clicked on satellite with NORAD Cat ID: ', satname);
         setShowSimulateButton(true);
         setSelectedSatelliteName(satname);
     };
@@ -79,6 +78,11 @@ const CesiumContainer = ({ selectedGroup, setShowSimulateButton, setSelectedSate
                     key={sat.noradCatId}
                     id={sat.noradCatId}
                     position={Cartesian3.fromDegrees(sat.longitude, sat.latitude, sat.altitude)}
+                    // billboard={{
+                    //     image: satelliteImage,
+                    //     scale: 0.1,
+                    //     // color: color,
+                    // }}
                     point={pointGraphics}
                     description={`
                         <div>${sat.satname} - ${sat.orbittype}</div>

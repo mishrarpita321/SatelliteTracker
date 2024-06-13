@@ -13,10 +13,10 @@ const SocketStatus = () => {
                     {connectionStatus}
                 </div>
             )}
-            <div className="notification-bell">
+            {/* <div className="notification-bell">
                 <FaBell size={24} />
                 {notificationCount > 0 && <span className="notification-count">{notificationCount}</span>}
-            </div>
+            </div> */}
         </header>
     )
 }
