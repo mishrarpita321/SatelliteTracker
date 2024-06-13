@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const SatelliteGroupSelector = ({ setSelectedGroup, selectedGroup, showSimulateButton }) => {
+const SatelliteGroupSelector = ({ setSelectedGroup, selectedGroup, showSimulateButton, setShowDriftVisualisation }) => {
     const navigate = useNavigate()
     const satelliteGroups = [
         { name: 'Intelsat', value: 'intelsat' },
@@ -14,8 +14,7 @@ const SatelliteGroupSelector = ({ setSelectedGroup, selectedGroup, showSimulateB
     };
 
     const handleSimulate = () => {
-        console.log('Simulating...');
-        navigate('/drift');
+       setShowDriftVisualisation(true);
     };
 
     return (
@@ -35,7 +34,23 @@ const SatelliteGroupSelector = ({ setSelectedGroup, selectedGroup, showSimulateB
                     </div>
                 ))}
             </div>
-            {showSimulateButton && <button onClick={handleSimulate}>Simulate Drift</button>}
+            {showSimulateButton && (
+                <div>
+                    <button
+                        onClick={handleSimulate}
+                        style={{
+                            margin: '0 0 10px 0',
+                            padding: '10px 20px',
+                            borderRadius: '5px',
+                            backgroundColor: '#0056b3',
+                            color: 'white',
+                            border: 'white',
+                        }}
+                    >
+                        Simulate Drift
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

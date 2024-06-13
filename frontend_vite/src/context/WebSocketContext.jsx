@@ -34,7 +34,7 @@ export const WebSocketProvider = ({ children }) => {
     }, [wsService]);
 
     const handleMessage = useCallback((message) => {
-        console.log('Received message:', message);
+        // console.log('Received message:', message);
         if (message.type === 'notification') {
             setNotifications(prev => [...prev, message]);
         }

@@ -15,8 +15,8 @@ function App() {
       <BrowserRouter>
         <SocketStatus />
         <Routes>
-          <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} />} />
-          <Route path="/drift" element={<DriftVisualisation satName={selectedSatelliteName} />} />
+          <Route path="/satellites" element={<SatellitesViewer setSelectedSatelliteName={setSelectedSatelliteName} satName={selectedSatelliteName}/>} />
+          {/* <Route path="/satellites/drift" element={<DriftVisualisation satName={selectedSatelliteName} />} /> */}
           <Route path="/" element={<Home />} />
         </Routes>
       </BrowserRouter>
