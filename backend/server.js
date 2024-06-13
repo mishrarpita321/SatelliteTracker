@@ -5,25 +5,25 @@ const { connectDB } = require('./config/db');
 const driftRoutes = require('./routes/driftRoutes');
 const app = express();
 const cors = require('cors');
-const { fetchSatelliteData, calculateSatellitePositions } = require('./controllers/driftSatellitePositions');
+const { fetchSatelliteData } = require('./controllers/driftSatellitePositions');
 const { setupWebSocketServer } = require('./middleware/webSocketMiddleware');
 const { sendTestNotification } = require('./controllers/notificationController');
 const { fetchAndStoreSatelliteData } = require('./controllers/driftController');
 app.use(cors());
 const PORT = process.env.PORT || 3000;
-// Middleware
+
 app.use(express.json());
 app.use('/api/drift', driftRoutes);
 app.use(express.static('public'));
 app.post('/api/sendNotification', sendTestNotification);
 
-// Create an HTTP server from the Express app
+
 const server = http.createServer(app);
 // const wss = new WebSocket.Server({ port: 3002 });
 
-// Start the server
+
 server.listen(PORT, async () => {
-    await fetchSatelliteData();
+    // await fetchSatelliteData();
     console.log(`Server running on port ${PORT}`);
 });
 

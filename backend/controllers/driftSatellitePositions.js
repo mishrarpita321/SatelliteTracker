@@ -4,49 +4,6 @@ const Satellite = require('../models/Satellite');
 const { MongoClient } = require('mongodb');
 const neo4jDriver = require('../config/db').neo4jDriver;
 
-exports.fetchSatelliteTle = async (req, res) => {
-    const url = `https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle`;
-    try {
-        const response = await axios.get(url);
-        if (response.status === 200) {
-            const data = response.data;
-            const tleLines = data.split('\n');
-            const tleSets = [];
-            for (let i = 0; i < tleLines.length; i += 3) {
-                const tleSet = tleLines.slice(i, i + 3).map(line => line.replace('\r', '').trim());
-
-                if (tleSet.length === 3 && tleSet[0] && tleSet[1] && tleSet[2]) {
-                    tleSets.push(tleSet);
-                }
-            }
-            const satelliteLocations = [];
-            for (const tleSet of tleSets) {
-                const tleLine0 = tleSet[0];
-                const tleLine1 = tleSet[1];
-                const tleLine2 = tleSet[2];
-                const satrec = satellite.twoline2satrec(tleLine1, tleLine2);
-                const noradCatId = satrec.satnum;
-
-                satelliteLocations.push({
-                    noradCatId: noradCatId,
-                    satellite: tleLine0,
-                    line1: tleLine1,
-                    line2: tleLine2,
-                    timestamp: new Date(),
-                });
-            }
-            await saveDataInMongo(satelliteLocations);
-            res.json("satelliteLocations saved successfully.");
-            console.log("satelliteLocations saved successfully.");
-        } else {
-            throw new Error(`Request failed with status code ${response.status}`);
-        }
-    } catch (error) {
-        console.error('Error:', error.message);
-        res.status(500).send('Internal Server Error');
-    }
-};
-
 let satelliteData = [];
 exports.fetchSatelliteData = async () => {
     try {
@@ -64,7 +21,6 @@ exports.fetchSatelliteData = async () => {
     }
 }
 
-// Calculate satellite positions from the stored data
 exports.calculateSatellitePositions = async (group) => {
     
     const currentDate = new Date();
@@ -89,12 +45,9 @@ exports.calculateSatellitePositions = async (group) => {
 
         const latitudeDeg = satellite.degreesLat(positionGd.latitude);
         const longitudeDeg = satellite.degreesLong(positionGd.longitude);
-        const altitude = positionGd.height; // Convert km to meters if needed
+        const altitude = positionGd.height;
 
         const orbittype = determineOrbitType(altitude);
-
-        // const orbitPath = calculateOrbitPath(line1, line2, satrec);
-
         return {
             noradCatId: noradCatId,
             satname: satname,
@@ -195,16 +148,14 @@ const saveGroupDataInMongo = async (satelliteLocations, group) => {
     }
 }
 
-async function getSatelliteOrbitalParameters (satName) { // Assuming satellite name is passed as a URL parameter
+async function getSatelliteOrbitalParameters (satName) { 
 
     try {
-        // Connect to MongoDB
         const client = new MongoClient(process.env.MONGODB_URI);
         await client.connect();
         const db = client.db('satellites');
-        const collection = db.collection('starlink'); // Assuming 'starlink' collection
+        const collection = db.collection('starlink');
 
-        // Fetch satellite TLE data
         const satelliteData = await collection.findOne({ satellite: satName });
         if (!satelliteData) {
             throw new Error('Satellite not found');
@@ -212,18 +163,11 @@ async function getSatelliteOrbitalParameters (satName) { // Assuming satellite n
 
         const { line1, line2 } = satelliteData;
         const satrec = satellite.twoline2satrec(line1, line2);
-        const noradCatId = satrec.satnum;
         const epochYear = satrec.epochyr;
         const epochDay = satrec.epochdays;
         const epochDate = new Date(Date.UTC(2000 + epochYear, 0, 1));
         epochDate.setUTCDate(epochDate.getUTCDate() + epochDay - 1);
 
-        // Extract mean motion, eccentricity, and inclination
-        const meanMotion = satrec.no * 1440.0 / (2 * Math.PI); // converting rad/min to rev/day
-        const eccentricity = satrec.ecco;
-        const inclination = satrec.inclo * (180 / Math.PI); // converting rad to degrees
-
-        // Calculate current position
         const currentDate = new Date();
         const positionAndVelocity = satellite.propagate(satrec, currentDate);
         const positionEci = positionAndVelocity.position;
@@ -238,10 +182,8 @@ async function getSatelliteOrbitalParameters (satName) { // Assuming satellite n
         const longitudeDeg = satellite.degreesLong(positionGd.longitude);
         const altitude = positionGd.height; 
 
-        // Close the client connection
         client.close();
 
-        // Return satellite data
         return {
             latitude: latitudeDeg,
             longitude: longitudeDeg,
@@ -283,7 +225,6 @@ exports.fetchOrbitalDetailsFromNeo4j = async (objectName) => {
                 noradId: record.get('noradId')
             };
 
-            // Fetch latitude, longitude, and altitude from MongoDB
             const satelliteParameters = await getSatelliteOrbitalParameters(objectName);
 
             satelliteData = {
@@ -302,6 +243,7 @@ exports.fetchOrbitalDetailsFromNeo4j = async (objectName) => {
     }
 };
 
+//For testing purposes
 exports.getPost = async (req, res) => {
     // const { satName } = req.body;
     try {
@@ -315,13 +257,11 @@ exports.getPost = async (req, res) => {
 exports.driftDetectionFn = async (satelliteData) => {
     const session = neo4jDriver.session({ database: 'satellites' });
 
-    // Define drift detection thresholds
     const thresholds = {
         mean_motion: 0.05,
         eccentricity: 0.001,
         inclination: 0.1
     };
-    // Construct the drift detection and epoch check part of the query
     const driftCheckQuery = `
     OPTIONAL MATCH (s:Satellite {norad_id: $norad_id})-[:OBSERVED]->(last)
     WITH s, last
@@ -337,7 +277,6 @@ exports.driftDetectionFn = async (satelliteData) => {
         } AS driftDetails`;
 
     try {
-        // Run the drift detection query
         const checkResult = await session.run(driftCheckQuery, {
             OBJECT_NAME: satelliteData.OBJECT_NAME,
             norad_id: satelliteData.norad_id,

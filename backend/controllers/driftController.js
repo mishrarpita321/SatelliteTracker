@@ -1,7 +1,7 @@
 const fetchSatelliteData = require("../utils/fetchSatelliteData");
 const neo4jDriver = require('../config/db').neo4jDriver;
 // const Satellite = require('../models/Satellite');
-const logger = require('../utils/logger'); // Ensure this path is correct
+const logger = require('../utils/logger'); 
 
 exports.fetchAndStoreSatelliteData = async (req, res) => {
     try {
@@ -40,14 +40,11 @@ exports.fetchAndStoreSatelliteData = async (req, res) => {
 
 exports.saveToNeo4j = async (satelliteData) => {
     const session = neo4jDriver.session({ database: 'satellites' });
-
-    // Define drift detection thresholds
     const thresholds = {
         mean_motion: 0.05,
         eccentricity: 0.001,
         inclination: 0.1
     };
-    // Construct the drift detection and epoch check part of the query
     const driftCheckQuery = `
     OPTIONAL MATCH (s:Satellite {norad_id: $norad_id})-[:OBSERVED]->(last)
     WITH s, last
@@ -63,7 +60,6 @@ exports.saveToNeo4j = async (satelliteData) => {
         } AS driftDetails`;
 
     try {
-        // Run the drift detection query
         const checkResult = await session.run(driftCheckQuery, {
             OBJECT_NAME: satelliteData.OBJECT_NAME,
             norad_id: satelliteData.norad_id,
@@ -111,7 +107,6 @@ exports.saveToNeo4j = async (satelliteData) => {
                 console.log(`Drift detected for ${satelliteData.OBJECT_NAME}`);
                 return `Drift detected for ${satelliteData.OBJECT_NAME}`;
             } else if (firstInsertion) {
-                // Create/update the node and relationships if it's the first data point or drift is detected
                 const query = `
                 CREATE (current:Satellite {
                     OBJECT_NAME: $OBJECT_NAME,

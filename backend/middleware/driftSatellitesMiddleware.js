@@ -1,5 +1,5 @@
 const { WebSocket } = require("ws");
-const { calculateSatellitePositions, getSatelliteOrbitalParameters, fetchOrbitalDetailsFromNeo4j } = require("../controllers/driftSatellitePositions");
+const { calculateSatellitePositions, fetchOrbitalDetailsFromNeo4j } = require("../controllers/driftSatellitePositions");
 
 function subscribeToSatelliteGroups(ws, updateIntervals, satelliteGroupSubscribers, group) {
     // console.log('Subscribing to sat groups:', group);
@@ -28,7 +28,7 @@ function subscribeToSatelliteGroups(ws, updateIntervals, satelliteGroupSubscribe
                     client.send(message);
                 }
             });
-        }, 1000); // Consider making this configurable
+        }, 1000);
         updateIntervals.set(group, intervalId);
         // console.log("intervalId", intervalId);
     }
@@ -68,7 +68,7 @@ function subscribeToSatellitePosition(ws, updateIntervals, selectedSatelliteSubs
                     client.send(message);
                 }
             });
-        }, 1000); // Consider making this configurable
+        }, 1000); 
         updateIntervals.set(satName, intervalId);
         // console.log("intervalId", intervalId);
     }

@@ -19,6 +19,7 @@
     "mongoose": "^8.4.0",
     "neo4j-driver": "^5.20.0",
     "nodemon": "^3.1.0",
+    "redis": "^4.6.14",
     "satellite.js": "^5.0.0",
     "winston": "^3.13.0",
     "ws": "^8.17.0"
