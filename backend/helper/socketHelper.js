@@ -1,4 +1,4 @@
-const WebSocket = require('ws');  // Import WebSocket from the 'ws' package
+const WebSocket = require('ws');  
 const { connections } = require('../middleware/webSocketMiddleware');
 
 function broadcastMessage(message) {

@@ -6,12 +6,10 @@ exports.getAllAsteroids = async (req, res) => {
     const { page = 1, limit = 10, search = '', sortKey = 'name', sortDirection = 'asc' } = req.query;
 
     try {
-        // Build search query
         const query = search
             ? { name: { $regex: search, $options: 'i' } }
             : {};
 
-        // Determine sorting field and direction
         const sortFields = {
             name: 'name',
             diameter: 'estimated_diameter.kilometers.estimated_diameter_min',
@@ -24,14 +22,12 @@ exports.getAllAsteroids = async (req, res) => {
             [sortField]: sortDirection === 'asc' ? 1 : -1
         };
 
-        // Fetch sorted and paginated data
         const asteroids = await Asteroid.find(query)
             .sort(sort)
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
 
-        // Count the total documents
         const count = await Asteroid.countDocuments(query);
 
         res.json({
@@ -77,7 +73,6 @@ exports.getAsteroidDetails = async (req, res) => {
 
 exports.getAsteroidVisibility = async (req, res) => {
     try {
-        // const asteroidId = req.params.id;
         const asteroidId = req.params.id;
         // const asteroidId = "2315020";
         console.log(asteroidId);

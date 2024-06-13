@@ -1,7 +1,7 @@
 const { WebSocket } = require("ws");
 const { getAsteroidOrbitalPosition, getOtbitalDatabyId } = require("../utils/predictAsteroidPosition");
 
-const simulatedTimes = new Map(); // Store the last simulated time independently
+const simulatedTimes = new Map(); 
 
 function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
     console.log('previousSimulatedIntervalRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR:', ws.previousSimulatedInterval)
@@ -48,7 +48,7 @@ function subscribeToAsteroid(ws, updateIntervals, AsteroidSubscribers, data) {
                         });
                     });
 
-                    // Store the last simulated time
+                   
                     simulatedTimes.set(asteroidId, simulatedTime);
                 }, 1000); // Run every second
                 updateIntervals.set(asteroidId, intervalId);

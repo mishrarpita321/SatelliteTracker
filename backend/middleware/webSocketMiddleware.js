@@ -1,12 +1,9 @@
 const WebSocket = require('ws');
 const { subscribeToSatelliteGroups, unsubscribeToSatelliteGroups } = require('./driftSatellitesMiddleware');
 const { subscribeToAsteroid, unsubscribeFromAsteroid, handleIntervalChange } = require('./asteroidMiddleware');
-// const { getFakeAsteroidOrbitalPosition } = require('../utils/predictPosition');
 
-// Store all active connections for broad messaging
 let connections = new Set();
 
-// Maps to manage subscribers and intervals for specific asteroid updates
 const AsteroidSubscribers = new Map();
 const satelliteGroupSubscribers = new Map();
 const updateIntervals = new Map();
@@ -18,7 +15,7 @@ function setupWebSocketServer(server) {
     server.on('upgrade', (req, socket, head) => {
         wss.handleUpgrade(req, socket, head, ws => {
             wss.emit('connection', ws, req);
-            connections.add(ws); // Add to global connections set for notifications
+            connections.add(ws); 
         });
     });
 
@@ -38,16 +35,8 @@ function setupWebSocketServer(server) {
 
         ws.on('close', () => {
             console.log('WebSocket connection closedTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
-            connections.delete(ws); // Remove from global set on close
-            // Clean up any subscriptions this connection had
-            // AsteroidSubscribers.forEach((subs, asteroidId) => {
-            //     subs.delete(ws);
-            //     if (subs.size === 0) {
-            //         clearInterval(updateIntervals.get(asteroidId));
-            //         updateIntervals.delete(asteroidId);
-            //         AsteroidSubscribers.delete(asteroidId);
-            //     }
-            // });
+            connections.delete(ws); 
+
             AsteroidSubscribers.forEach((asteroidSubs, asteroidId) => {
                 asteroidSubs.forEach((intervalSubs, simulatedInterval) => {
                     intervalSubs.delete(ws);
@@ -98,4 +87,4 @@ function handleClientMessage(ws, data) {
             console.error('Unknown type or command from WebSocket client:', data.type);
     }
 }
-module.exports = { setupWebSocketServer, connections }; // Export connections for external use
+module.exports = { setupWebSocketServer, connections }; 

@@ -6,8 +6,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useWebSocket } from '../../context/WebSocketContext';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const SCALE_FACTOR = 1e-7; // Adjusted scale factor
-const PLANET_SIZE = 1; // Base size for planets
+const SCALE_FACTOR = 1e-7; // scale factor
+const PLANET_SIZE = 1; 
 
 const TIME_INTERVALS = {
     '1day': 24 * 60 * 60 * 1000,
@@ -24,7 +24,7 @@ const AsteroidOrbit = () => {
     const mountRef = useRef(null);
     const asteroidRef = useRef(null);
     const labelsRef = useRef([]);
-    const pivotRef = useRef(new THREE.Object3D()); // Pivot point for rotation
+    const pivotRef = useRef(new THREE.Object3D());
     const [scene, setScene] = useState(null);
     const [camera, setCamera] = useState(null);
     const [renderer, setRenderer] = useState(null);
@@ -38,7 +38,7 @@ const AsteroidOrbit = () => {
 
 
     const updatePlanetPositions = (newSimulationTime) => {
-        const deltaTime = 1; // One second interval
+        const deltaTime = 1; 
         pivotRef.current.children.forEach((child) => {
             if (child.name && orbitalData[child.name]) {
                 const data = orbitalData[child.name];
@@ -66,9 +66,9 @@ const AsteroidOrbit = () => {
         const height = mountRef.current.clientHeight;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000); // Set background color
+        scene.background = new THREE.Color(0x000000); 
 
-        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100000); // Increased far plane
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100000); 
         camera.position.set(-10, -10, 40);
 
         const renderer = new THREE.WebGLRenderer();
@@ -78,7 +78,7 @@ const AsteroidOrbit = () => {
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.enableRotate = false; // Disable default rotation
+        controls.enableRotate = false;
 
         const ambientLight = new THREE.AmbientLight(0x404040);
         scene.add(ambientLight);
@@ -127,7 +127,6 @@ const AsteroidOrbit = () => {
             planet.position.set(position.x * SCALE_FACTOR, position.y * SCALE_FACTOR, position.z * SCALE_FACTOR);
             planet.name = name;
 
-            // Create a sprite for the label
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             context.font = 'Bold 20px Arial';
@@ -152,8 +151,8 @@ const AsteroidOrbit = () => {
                 const position = getOrbitalPosition(data, simulationTime.toISOString());
                 const planet = createPlanet(key, position, data.color, PLANET_SIZE);
                 const orbit = createOrbit(data.semi_major_axis, data.eccentricity, data.inclination, data.perihelion_argument, data.ascending_node_longitude, data.color);
-                pivotRef.current.add(planet); // Add planet to the pivot
-                pivotRef.current.add(orbit); // Add orbit to the pivot
+                pivotRef.current.add(planet); 
+                pivotRef.current.add(orbit); 
             }
         });
 
@@ -198,7 +197,7 @@ const AsteroidOrbit = () => {
         const animate = () => {
             controls.update();
 
-            const lerpFactor = 0.1; // Adjust the lerp factor to control the speed of interpolation
+            const lerpFactor = 0.1;
 
             pivotRef.current.children.forEach((child) => {
                 if (child.userData.targetPosition && child.userData.previousPosition) {
@@ -218,7 +217,7 @@ const AsteroidOrbit = () => {
                 }
             });
 
-            // Update label positions to always face the camera
+           
             labelsRef.current.forEach((label) => {
                 label.lookAt(camera.position);
             });
@@ -291,7 +290,7 @@ const AsteroidOrbit = () => {
         const newInterval = TIME_INTERVALS[event.target.value];
         setTimeInterval(newInterval);
 
-        // Send the interval change message to the backend
+       
         if (selectedAsteroId !== null) {
             sendMessage({
                 type: 'changeInterval',

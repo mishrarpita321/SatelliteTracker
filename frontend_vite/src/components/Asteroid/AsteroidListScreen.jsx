@@ -47,7 +47,7 @@ const AsteroidListScreen = () => {
 
     const handleLimitChange = (e) => {
         setLimit(Number(e.target.value));
-        setCurrentPage(1); // Reset to first page when limit changes
+        setCurrentPage(1);
     };
 
 

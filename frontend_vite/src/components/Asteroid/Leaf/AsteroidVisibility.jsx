@@ -4,13 +4,12 @@ import { useParams } from 'react-router-dom';
 import { MapContainer, TileLayer, GeoJSON, Marker, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import worldGeoJson from './world-geojson.json'; // Ensure this file is in the src directory
+import worldGeoJson from './world-geojson.json';
 import { API_ENDPOINTS } from '../../../constants/apiConstants';
 
-// Custom icon for the asteroid
 const asteroidIcon = new L.Icon({
   iconUrl: '/asteroid.png',
-  iconSize: [32, 32], // size of the icon
+  iconSize: [32, 32], 
 });
 
 const AsteroidVisibility = () => {
@@ -18,7 +17,7 @@ const AsteroidVisibility = () => {
   const [visibilityData, setVisibilityData] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(true);
-  const [geoJsonKey, setGeoJsonKey] = useState(0); // Key to force re-render of GeoJSON
+  const [geoJsonKey, setGeoJsonKey] = useState(0); 
 
   useEffect(() => {
     const fetchVisibilityData = async () => {
@@ -40,7 +39,6 @@ const AsteroidVisibility = () => {
   }, [asteroidId]);
 
   useEffect(() => {
-    // Force re-render of GeoJSON layer to reset tooltips
     setGeoJsonKey((prevKey) => prevKey + 1);
   }, [selectedDate]);
 
@@ -56,7 +54,6 @@ const AsteroidVisibility = () => {
     (data) => data.closeApproachDate === selectedDate
   );
 
-  // Function to add tooltips to each country on hover
   const onEachCountry = (country, layer) => {
     if (country.properties && country.properties.name) {
       layer.on({
@@ -118,7 +115,7 @@ const AsteroidVisibility = () => {
                 selectedVisibilityData.position.latitude,
                 selectedVisibilityData.position.longitude,
               ]}
-              radius={selectedVisibilityData.searchRadius} // radius in meters
+              radius={selectedVisibilityData.searchRadius}
               color="blue"
             />
             <GeoJSON

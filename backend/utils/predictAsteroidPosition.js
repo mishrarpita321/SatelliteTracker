@@ -2,7 +2,6 @@ const { neo4jDriver } = require('../config/db');
 
 function getAsteroidOrbitalPosition(orbitalData, date) {
     console.log('date:', date);
-    // date = new Date('2026-10-10T00:00:00Z').toISOString();
     const mu = 132712440018; // Standard gravitational parameter for the sun in km^3/s^2
     const a = parseFloat(orbitalData.semi_major_axis) * 149597870.7; // Semi-major axis in km
     const e = parseFloat(orbitalData.eccentricity);
@@ -59,7 +58,6 @@ function solveKeplersEquation(e, M) {
     return E;
 }
 
-// Placeholder function to fetch orbital data by ID
 const getOtbitalDatabyId = async (asteroidId) => {
     const session = neo4jDriver.session({ database: 'asteroids' });
     const result = await session.run(
@@ -68,7 +66,6 @@ const getOtbitalDatabyId = async (asteroidId) => {
     );
     session.close();
 
-    // Process the result and extract the orbital data
     const record = result.records[0];
     const orbitalData = {
         semi_major_axis: record.get('od').properties.semi_major_axis,
