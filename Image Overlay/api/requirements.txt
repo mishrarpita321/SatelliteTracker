@@ -1,0 +1,14 @@
+Flask
+flask-cors
+eolearn-core
+eolearn-io
+eolearn-mask
+sentinelhub
+Pillow
+qdrant-client
+torchvision
+torch
+numpy
+scikit-image
+geopy
+requests
