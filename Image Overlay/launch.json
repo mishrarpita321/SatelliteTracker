@@ -1,0 +1,22 @@
+{
+    "version": "1.0.0",
+    "configurations": [
+      {
+        "name": "Python: Flask",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/satellite_backend.py",
+        "env": {
+          "FLASK_APP": "satellite_backend.py",
+          "FLASK_ENV": "development"
+        },
+        "args": [
+          "run",
+          "--no-debugger",
+          "--no-reload"
+        ],
+        "jinja": true
+      }
+    ]
+  }
+  
