@@ -31,13 +31,13 @@ const Home = () => {
         <form className="custom-section">
           <div>
             <button type="button" onClick={handleAstronaut} className="custom-button">
-              <span>Astronaut Nearest Satellites - Sarah Khatib</span>
+              <span>Astronaut Nearest Satellites</span>
             </button>
             <button type="button" onClick={handleSatelliteDrift} className="custom-button">
-              <span>Satellite Drift - Arpita Mishra</span>
+              <span>Satellite Drift</span>
             </button>
             <button type="button" onClick={handleAsteroids} className="custom-button">
-              <span>Asteroids List - Roshan Devkota</span>
+              <span>Asteroids List</span>
             </button>
             {/* <button type="button" onClick={handleSatelliteCollision} className="custom-button">
               <span>Satellite Collision</span>
