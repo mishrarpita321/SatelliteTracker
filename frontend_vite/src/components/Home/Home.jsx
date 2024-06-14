@@ -39,12 +39,12 @@ const Home = () => {
             <button type="button" onClick={handleAsteroids} className="custom-button">
               <span>Asteroids List - Roshan Devkota</span>
             </button>
-            <button type="button" onClick={handleSatelliteCollision} className="custom-button">
+            {/* <button type="button" onClick={handleSatelliteCollision} className="custom-button">
               <span>Satellite Collision</span>
             </button>
             <button type="button" onClick={handleImageOverlay} className="custom-button">
               <span>Image Overlay</span>
-            </button>
+            </button> */}
           </div>
         </form>
       </div>
